@@ -49,27 +49,29 @@ MAX_SEEN = int(os.getenv("MAX_SEEN", "3000"))
 SUBSCRIBERS = [
     {
         "name": "Moi",
-        "telegram": "1952904877",
-        "whatsapp": "212700301878",
+        #"telegram": "1952904877",
+        "telegram": None,
+        #"whatsapp": "212700301878",
+        "whatsapp": None,
         "bdc": True,
         "ao": True,
         "subscriptions": ["ALL"],
     },
-    {
-        "name": "Zakariya",
-        "telegram": "8260779046",
-        "whatsapp": "212660576019",
-        "bdc": True,
-        "ao": True,
-        "subscriptions": ["Event & Formation", "Pépite"],
-    },
+    # {
+    #     "name": "Zakariya",
+    #     "telegram": "8260779046",
+    #     "whatsapp": "212660576019",
+    #     "bdc": True,
+    #     "ao": True,
+    #     "subscriptions": ["Event & Formation"],
+    # },
     {
         "name": "Hamza",
-        "telegram": None,          # ⚠️ mettre son VRAI chat_id, different de Zakariya
+        "telegram": "8260779046",          # ⚠️ mettre son VRAI chat_id, different de Zakariya
         "whatsapp": "212665803935",
         "bdc": True,
-        "ao": False,
-        "subscriptions": ["Event & Formation", "Pépite"],
+        "ao": True,
+        "subscriptions": ["Event & Formation"],
     },
     # {
     #     "name": "Abdeslam",
@@ -113,7 +115,8 @@ KEYWORDS = {
 # Les autres mots-cles matchent en PREFIXE : "agri" attrape "agricole", "agriculture".
 MOTS_EXACTS = {"app", "ia", "web", "data", "ged", "gst", "cloud"}
 
-# Zones prioritaires : ces offres passent meme avec un score de 0
+# Zones prioritaires : BONUS seulement (signalement + tri), jamais un
+# laissez-passer. Une offre doit d'abord passer le filtre mots-cles.
 SPECIAL_ZONES = ["errachidia", "ouarzazate", "midelt", "tafilalet"]
 
 EXCLUSIONS_BDC = [

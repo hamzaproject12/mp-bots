@@ -38,10 +38,12 @@ def contient(mot, texte_lower):
 # =========================================================
 #                       SCORING
 # =========================================================
-def is_pepite(text_lower):
-    """Zone prioritaire ou conseil agricole : l'offre passe quoi qu'il arrive."""
-    return (any(contient(z, text_lower) for z in config.SPECIAL_ZONES)
-            or contient("conseil agri", text_lower))
+def zone_prioritaire(text_lower):
+    """Zone geographique prioritaire.
+    ⚠️ C'est un BONUS, pas un laissez-passer : l'offre doit d'abord passer
+    le filtre mots-cles. Sinon on recevait des marches de moquette ou
+    d'hotellerie juste parce que 'Drâa-Tafilalet' figurait dans le lieu."""
+    return any(contient(z, text_lower) for z in config.SPECIAL_ZONES)
 
 
 def scorer(text_lower):
@@ -158,24 +160,23 @@ def run(context):
 
                     t_lower = full_text.lower()
 
-                    # La pepite est detectee AVANT le filtrage : une offre a
-                    # Ouarzazate passe meme si son score est faible.
-                    special = is_pepite(t_lower)
+                    # SEUL le filtre mots-cles decide. La zone n'est qu'un bonus.
                     score, category, mots = scorer(t_lower)
                     retenue = passe_le_seuil(score, category)
 
                     if config.DEBUG_SCORING:
-                        etat = "✅" if (retenue or special) else "❌"
-                        log(f"   {etat} score={score} cat={category} pepite={special} mots={mots}")
+                        etat = "✅" if retenue else "❌"
+                        log(f"   {etat} score={score} cat={category} mots={mots}")
 
-                    if not (retenue or special):
+                    if not retenue:
                         continue
 
-                    if special and not retenue:
-                        category = "Pépite"
+                    zone = zone_prioritaire(t_lower)
 
                     links = card.locator(".entreprise__middleSubCard a")
                     ref = links.nth(0).inner_text().strip()
+                    # Le site prefixe deja par "Référence :" — on evite le doublon
+                    ref = re.sub(r"^\s*r[ée]f[ée]rence\s*:\s*", "", ref, flags=re.I).strip()
                     objet = links.nth(1).inner_text().replace("Objet :", "").strip()
 
                     dates = card.locator(".entreprise__rightSubCard--top .font-bold")
@@ -195,8 +196,8 @@ def run(context):
                         log(f"↪️ [BDC] ignoree (aucun abonne pour '{category}') : {ref}")
                         continue
 
-                    emoji = "🚜🌾" if contient("agri", t_lower) else "📍🏜️" if special else "🚨"
-                    title = "PÉPITE DÉTECTÉE" if special else f"ALERTE {category}"
+                    emoji = "🚜🌾" if contient("agri", t_lower) else "📍🏜️" if zone else "🚨"
+                    title = f"ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
 
                     msg = (
                         f"{emoji} **{title}**\n━━━━━━━━━━━━\n"
@@ -208,7 +209,8 @@ def run(context):
                     )
 
                     alerts.append({
-                        "sort_key": score + (100 if special else 0),
+                        # Les zones prioritaires remontent en tete de conversation
+                        "sort_key": score + (100 if zone else 0),
                         "msg": msg,
                         "wa_params": [f"{title} · Score {score}", ref, objet,
                                       date_limite, lieu, link],
