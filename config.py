@@ -49,13 +49,13 @@ MAX_SEEN = int(os.getenv("MAX_SEEN", "3000"))
 SUBSCRIBERS = [
     {
         "name": "Moi",
-        #"telegram": "1952904877",
-        "telegram": None,
-        #"whatsapp": "212700301878",
-        "whatsapp": None,
+        "telegram": "1952904877",
+        #"telegram": None,
+        "whatsapp": "212700301878",
+        #"whatsapp": None,
         "bdc": True,
         "ao": True,
-        "subscriptions": ["ALL"],
+        "subscriptions": ["Event & Formation"],
     },
     # {
     #     "name": "Zakariya",
@@ -65,14 +65,14 @@ SUBSCRIBERS = [
     #     "ao": True,
     #     "subscriptions": ["Event & Formation"],
     # },
-    {
-        "name": "Hamza",
-        "telegram": "1952904877",          # ⚠️ mettre son VRAI chat_id, different de Zakariya
-        "whatsapp": "212665803935",
-        "bdc": True,
-        "ao": True,
-        "subscriptions": ["Event & Formation"],
-    },
+    # {
+    #     "name": "Hamza",
+    #     "telegram": "1952904877",          # ⚠️ mettre son VRAI chat_id, different de Zakariya
+    #     "whatsapp": "212665803935",
+    #     "bdc": True,
+    #     "ao": True,
+    #     "subscriptions": ["Event & Formation"],
+    # },
     # {
     #     "name": "Abdeslam",
     #     "telegram": "7943145340",
