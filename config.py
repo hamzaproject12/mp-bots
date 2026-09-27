@@ -67,7 +67,7 @@ SUBSCRIBERS = [
     # },
     {
         "name": "Hamza",
-        "telegram": "8260779046",          # ⚠️ mettre son VRAI chat_id, different de Zakariya
+        "telegram": "1952904877",          # ⚠️ mettre son VRAI chat_id, different de Zakariya
         "whatsapp": "212665803935",
         "bdc": True,
         "ao": True,
@@ -104,7 +104,7 @@ KEYWORDS = {
     "Infra": ["hébergement", "cloud", "maintenance", "sécurité", "serveur",
               "réseau", "informatique", "matériel informatique"],
     "Event & Formation": ["formation", "atelier", "renforcement de capacité", "organisation",
-                          "animation", "sensibilisation", "impression", "conception",
+                          "animation", "sensibilisation", "conception",
                           "enquête", "étude", "conseil agricole", "conseil", "agri"],
     "Mdiq": ["mdiq", "MDIQ-FNIDEQ", "MEDIAQ", "MDIQ FNIDEQ", "Sante", "GST"],
 }
@@ -124,7 +124,7 @@ EXCLUSIONS_BDC = [
     "mobilier", "siège", "chaise", "bâtiment", "plomberie", "sanitaire", "toilette",
     "douche", "peinture", "électricité", "jardinage", "espaces verts", "piscine",
     "vêtement", "habillement", "aménagement", "travaux", "voirie", "topographique",
-    "topographie", "billet", "billetterie", "aérien", "ensam", "faculte", "faculté",
+    "topographie", "billetterie", "aérien", "ensam", "faculte", "faculté",
     "université", "école supérieure", "ecole superieure",
 ]
 
@@ -185,7 +185,7 @@ EXCLUSIONS_AO = [
     "nettoyage", "gardiennage", "construction", "bâtiment", "plomberie",
     "sanitaire", "peinture", "électricité", "jardinage", "espaces verts",
     "piscine", "vêtement", "habillement", "carburant", "véhicule",
-    "transport", "billet", "aérien", "travaux", "voirie", "topographique",
+    "transport", "aérien", "travaux", "voirie", "topographique",
     "la peche", "secteur de la pêche", "maritime",
 ]
 
