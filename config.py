@@ -14,7 +14,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 # --- WhatsApp Cloud API ---
 WA_TOKEN = os.getenv("WA_TOKEN")
 WA_PHONE_ID = os.getenv("WA_PHONE_ID", "1318151618051403")
-WA_TEMPLATE = os.getenv("WA_TEMPLATE", "alerte_marche_public")
+WA_TEMPLATE = os.getenv("WA_TEMPLATE", "alerte_veille_mp")
 WA_LANG = os.getenv("WA_LANG", "fr")
 WA_API_VERSION = os.getenv("WA_API_VERSION", "v25.0")
 
