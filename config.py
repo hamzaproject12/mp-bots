@@ -51,7 +51,7 @@ SUBSCRIBERS = [
         "name": "Moi",
         "telegram": "1952904877",
         #"telegram": None,
-        "whatsapp": "212700301878",
+        "whatsapp": "212665803935",
         #"whatsapp": None,
         "bdc": True,
         "ao": True,
