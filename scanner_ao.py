@@ -246,7 +246,7 @@ def run(context):
                     alerts.append({
                         "sort_key": score,
                         "msg": msg,
-                        "wa_params": ["[AO] OFFRE AGRI CIBLÉE", buyer, objet,
+                        "wa_params": ["🎯 [AO] OFFRE AGRI CIBLÉE", buyer, objet,
                                       deadline, "Maroc", link],
                         "id": offer_id,
                         "recipients": recipients,
