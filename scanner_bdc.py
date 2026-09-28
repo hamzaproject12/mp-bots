@@ -197,7 +197,8 @@ def run(context):
                         continue
 
                     emoji = "🚜🌾" if contient("agri", t_lower) else "📍🏜️" if zone else "🚨"
-                    title = f"ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
+                    #title = f"ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
+                    title = f"📦 [BDC] ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
 
                     msg = (
                         f"{emoji} **{title}**\n━━━━━━━━━━━━\n"
