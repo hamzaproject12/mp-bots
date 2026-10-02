@@ -65,6 +65,14 @@ SUBSCRIBERS = [
         "ao": True,
         "subscriptions": ["Event & Formation"],
     },
+    {
+        "name": "Imane",
+        "telegram": None,                 # WhatsApp uniquement
+        "whatsapp": "212653582105",
+        "bdc": True,
+        "ao": True,
+        "subscriptions": ["Event & Formation"],
+    },
     # {
     #     "name": "Hamza",
     #     "telegram": "1952904877",          # ⚠️ mettre son VRAI chat_id, different de Zakariya
