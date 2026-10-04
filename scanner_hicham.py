@@ -155,10 +155,64 @@ def _postback(page, action, label, timeout=60000):
 # On cherche le LIBELLE dans le texte de la page et on prend ce qui suit.
 # Plus robuste qu'un identifiant technique si le portail change sa mise en page.
 _CHAMPS = {
-    "estimation": r"Estimation\s*\(en\s*Dhs\s*TTC\)\s*:?\s*([^\n]+)",
-    "caution":    r"Caution\s+provisoire\s*:?\s*([^\n]+)",
-    "quals":      r"Qualifications?\s*:?\s*([^\n]+(?:\n(?!\s*\w+\s*:)[^\n]+)*)",
+    "estimation": r"Estimation\s*\(\s*en\s*Dhs\s*TTC\s*\)\s*:?\s*([^\n]+)",
+    "caution":    r"Caution\s+provisoire[^:\n]{0,30}:?\s*([^\n]+)",
+    "quals":      r"Qualifications?[^:\n]{0,30}:?\s*([^\n]+(?:\n(?!\s*\w+\s*:)[^\n]+)*)",
 }
+
+# Mots qui annoncent un AUTRE libelle : si la "valeur" lue en commence par
+# l'un d'eux, c'est que le vrai champ est vide (on a lu le libelle suivant).
+_LIBELLES = re.compile(
+    r"^(caution|estimation|qualification|date|lieu|objet|reference|echantillon|"
+    r"visite|variante|categorie|lot|domaine|agr[eé]ment|r[eé]union)", re.I)
+
+# Le portail replie certains blocs derriere un (+) : leur texte est dans la page
+# mais CACHE, donc inner_text() ne le voit pas. On force l'affichage de tout ce
+# qui est cache avant de lire, sans dependre d'un bouton precis.
+_REVELER_JS = """
+() => {
+  const skip = new Set(['HEAD','SCRIPT','STYLE','NOSCRIPT','TEMPLATE','META',
+                        'LINK','TITLE','OPTION','SELECT']);
+  document.querySelectorAll('body *').forEach(e => {
+    if (skip.has(e.tagName)) return;
+    const cs = getComputedStyle(e);
+    if (cs.display === 'none') {
+      const d = e.tagName === 'TR' ? 'table-row'
+              : (e.tagName === 'TD' || e.tagName === 'TH') ? 'table-cell'
+              : e.tagName === 'SPAN' ? 'inline' : 'block';
+      e.style.setProperty('display', d, 'important');
+    }
+    if (cs.visibility === 'hidden') e.style.setProperty('visibility', 'visible', 'important');
+  });
+}
+"""
+
+
+def _valeur_propre(brut):
+    """Nettoie une valeur lue ; vide si c'est en fait le libelle suivant."""
+    v = re.sub(r"\s+", " ", brut or "").strip(" :\t")
+    if not v or _LIBELLES.match(v):
+        return ""
+    return v[:400]
+
+
+def _extraire(texte):
+    out = {}
+    for cle, motif in _CHAMPS.items():
+        m = re.search(motif, texte, re.I)
+        out[cle] = _valeur_propre(m.group(1)) if m else ""
+    out["classe"] = _classe(out.get("quals", ""))
+    out["qualif"] = _qualif_courte(out.get("quals", ""))
+    return out
+
+
+def _extrait_autour(texte, mot, largeur=110):
+    """Petit extrait du texte autour du 1er mot (pour comprendre un echec)."""
+    plat = re.sub(r"\s+", " ", texte)
+    i = plat.lower().find(mot)
+    if i < 0:
+        return "ABSENT"
+    return plat[max(0, i - 15): i + largeur]
 
 
 def _classe(texte_quals):
@@ -185,7 +239,7 @@ def _qualif_courte(texte_quals):
 
 
 def lire_fiche(context, url):
-    """Ouvre la fiche, deplie le (+), retourne un dict de champs.
+    """Ouvre la fiche, revele les blocs replies, retourne un dict de champs.
     En cas d'echec, retourne un dict vide : l'alerte partira quand meme."""
     page = context.new_page()
     page.route("**/*.{png,jpg,jpeg,gif,woff,woff2,ico}", lambda r: r.abort())
@@ -196,7 +250,7 @@ def lire_fiche(context, url):
         except Exception:
             pass
 
-        # Deplier le bloc (+) s'il existe. Plusieurs pistes, la premiere qui marche.
+        # 1) on essaie de cliquer sur le (+) comme un humain
         for sel in ("a.toggle-detail", "img[src*='plus']", "a[id*='expand']",
                     "span.ui-icon-plus", "a:has-text('+')"):
             try:
@@ -208,13 +262,35 @@ def lire_fiche(context, url):
             except Exception:
                 continue
 
+        # 2) et surtout on force l'affichage de tout ce qui reste cache
+        try:
+            page.evaluate(_REVELER_JS)
+        except Exception as e:
+            log(f"   ⚠️ [{NAME}] revelation des blocs impossible : {str(e)[:60]}")
+
         texte = page.locator("body").inner_text()
-        out = {}
-        for cle, motif in _CHAMPS.items():
-            m = re.search(motif, texte, re.I)
-            out[cle] = re.sub(r"\s+", " ", m.group(1)).strip() if m else ""
-        out["classe"] = _classe(out.get("quals", ""))
-        out["qualif"] = _qualif_courte(out.get("quals", ""))
+        out = _extraire(texte)
+
+        # 3) dernier recours : textContent (inclut meme le texte cache)
+        if not (out["estimation"] or out["caution"] or out["quals"]):
+            try:
+                brut = page.evaluate("document.body.textContent") or ""
+                # textContent n'a plus les retours a la ligne : on les remet
+                # avant chaque libelle connu pour que les motifs fonctionnent.
+                brut = re.sub(r"\s+", " ", brut)
+                brut = re.sub(r"(Estimation|Caution provisoire|Qualification)",
+                              r"\n\1", brut, flags=re.I)
+                texte = brut
+                out = _extraire(texte)
+            except Exception:
+                pass
+
+        # Diagnostic : si un champ manque, on montre ce que la page contient
+        manquants = [k for k in ("estimation", "caution", "quals") if not out.get(k)]
+        if manquants or config.DEBUG_SCORING:
+            log(f"   🔬 [{NAME}] fiche lue ({len(texte)} car.), manquants={manquants}")
+            for mot in ("estimation", "caution", "qualification"):
+                log(f"      · {mot} → {_extrait_autour(texte, mot)}")
         return out
     except Exception as e:
         log(f"   ⚠️ [{NAME}] fiche illisible : {str(e)[:70]}")
