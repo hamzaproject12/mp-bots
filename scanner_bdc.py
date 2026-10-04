@@ -97,8 +97,6 @@ def _build_url(date_start, date_end, page_num):
 
 def run(context):
     """context = BrowserContext Playwright partage. Retourne (ok, alerts)."""
-    seen_list = store.load_seen(NAME)
-    seen_ids = set(seen_list)
     alerts = []
 
     today = datetime.now()
@@ -155,8 +153,6 @@ def run(context):
                     full_text = card.inner_text()
 
                     offer_id = hashlib.md5(full_text.encode("utf-8")).hexdigest()
-                    if offer_id in seen_ids:
-                        continue
 
                     t_lower = full_text.lower()
 
@@ -196,6 +192,11 @@ def run(context):
                         log(f"↪️ [BDC] ignoree (aucun abonne pour '{category}') : {ref}")
                         continue
 
+                    # Chaque client a son propre historique : on ne saute
+                    # que si TOUS l'ont deja recue.
+                    if store.tous_ont_vu(recipients, offer_id):
+                        continue
+
                     emoji = "🚜🌾" if contient("agri", t_lower) else "📍🏜️" if zone else "🚨"
                     #title = f"ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
                     title = f"📦 [BDC] ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
@@ -223,12 +224,7 @@ def run(context):
 
             current_page += 1
 
-        # On memorise les offres AVANT l'envoi : si l'envoi echoue on prefere
-        # rater une alerte plutot que de spammer au prochain passage.
-        for a in alerts:
-            seen_list.append(a["id"])
-        if alerts:
-            store.save_seen(NAME, seen_list)
+        # L'historique est tenu PAR CLIENT au moment de l'envoi (notifier.broadcast)
 
         return True, alerts
 

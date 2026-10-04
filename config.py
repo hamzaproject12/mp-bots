@@ -26,9 +26,9 @@ RUN_MODE = os.getenv("RUN_MODE", "once").lower()
 # Quels scanners activer : "bdc", "ao", ou "bdc,ao"
 SCANNERS = [s.strip().lower() for s in os.getenv("SCANNERS", "bdc,ao").split(",") if s.strip()]
 
-WA_TEST = os.getenv("WA_TEST", "0") == "1"
 DEBUG_SCORING = os.getenv("DEBUG_SCORING", "0") == "1"
-STARTUP_PING = os.getenv("STARTUP_PING", "0") == "1"   # message Telegram au demarrage
+# WA_TEST et STARTUP_PING supprimes : un deploiement ne doit JAMAIS
+# envoyer de message. Pour tester le canal : RUN_MODE=selftest.
 
 # --- Rythme (mode loop uniquement) ---
 SLEEP_OK = int(os.getenv("SLEEP_OK", "14400"))    # 4h apres un passage reussi

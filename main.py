@@ -3,9 +3,12 @@ Orchestrateur : lance les deux bots (BDC + AO) dans UN SEUL conteneur,
 avec UN SEUL navigateur Chromium partage.
 
 Modes (variable RUN_MODE) :
-  once  -> un passage puis sortie. A utiliser avec le cron Railway.
-           Le conteneur ne tourne que quelques minutes par jour.
-  loop  -> boucle infinie avec sommeil (ancien comportement, tourne 24h/24).
+  once     -> un passage puis sortie. A utiliser avec le cron Railway.
+              Le conteneur ne tourne que quelques minutes par jour.
+  loop     -> boucle infinie avec sommeil (tourne 24h/24).
+  selftest -> SEUL mode qui envoie un message de controle. Aucun scan.
+              Un deploiement en once/loop est TOUJOURS silencieux :
+              aucun client ne peut savoir qu'il a eu lieu.
 """
 import sys
 import time
@@ -20,10 +23,12 @@ from notifier import log
 
 import scanner_bdc
 import scanner_ao
+import scanner_hicham
 
 SCANNERS = {
     "bdc": scanner_bdc,
     "ao": scanner_ao,
+    "hicham": scanner_hicham,
 }
 
 CHROMIUM_ARGS = [
@@ -86,31 +91,29 @@ def run_once():
 
 
 def main():
-    log(f"🚀 MP Bots V6 | mode={config.RUN_MODE} | scanners={','.join(config.SCANNERS)}")
+    log(f"🚀 MP Bots V7 | mode={config.RUN_MODE} | scanners={','.join(config.SCANNERS)}")
 
     if not config.TELEGRAM_TOKEN:
         log("⚠️ TELEGRAM_TOKEN absent.")
     if not config.WA_TOKEN:
         log("⚠️ WA_TOKEN absent : WhatsApp desactive.")
     if store.volume_absent():
-        log(f"⚠️ '{config.DATA_PATH}' n'est pas un volume monte : "
-            "les offres seront renvoyees en double apres chaque deploiement.")
+        log(f"⚠️ '{config.DATA_PATH}' n'est pas persistant : "
+            "les offres seront renvoyees apres chaque deploiement.")
 
-    if config.STARTUP_PING:
-        for s in config.SUBSCRIBERS:
-            if s.get("telegram"):
-                notifier.send_telegram(s["telegram"], "✅ Bot operationnel.")
-                break
-
-    if config.WA_TEST:
-        cible = next((s["whatsapp"] for s in config.SUBSCRIBERS if s.get("whatsapp")), None)
-        if cible:
-            log("🧪 WhatsApp de controle...")
-            ok = notifier.send_whatsapp(cible, [
-                "TEST DEMARRAGE", "AO-TEST-001", "Verification du canal WhatsApp",
-                "01/01/2027 a 10:00", "Rabat", "https://www.marchespublics.gov.ma",
-            ])
-            log("🧪 Resultat : " + ("OK ✅" if ok else "ECHEC ❌ (voir erreur ci-dessus)"))
+    # --- selftest : le SEUL mode qui envoie quelque chose au demarrage ---
+    if config.RUN_MODE == "selftest":
+        cible = next((s for s in config.SUBSCRIBERS if s.get("whatsapp")), None)
+        if not cible:
+            log("🧪 selftest : aucun abonne avec un numero WhatsApp.")
+            sys.exit(1)
+        log(f"🧪 selftest -> {cible['name']} ({cible['whatsapp']})")
+        ok = notifier.send_whatsapp(cible["whatsapp"], [
+            "TEST DEMARRAGE", "AO-TEST-001", "Verification du canal WhatsApp",
+            "01/01/2027 a 10:00", "Rabat", "https://www.marchespublics.gov.ma",
+        ])
+        log("🧪 Resultat : " + ("OK ✅" if ok else "ECHEC ❌ (voir erreur ci-dessus)"))
+        sys.exit(0 if ok else 1)
 
     if config.RUN_MODE == "once":
         ok = run_once()

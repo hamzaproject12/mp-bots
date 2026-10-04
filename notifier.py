@@ -58,8 +58,10 @@ def wa_clean(text, max_len=280):
     return t[:max_len] if t else "-"
 
 
-def send_whatsapp(to, params):
-    """Envoie le template WhatsApp. params = liste dans l'ordre {{1}}..{{6}}"""
+def send_whatsapp(to, params, template=None):
+    """Envoie un template WhatsApp.
+    template=None  -> config.WA_TEMPLATE (comportement par defaut)
+    template="..." -> template dedie a un client"""
     if not (config.WA_TOKEN and config.WA_PHONE_ID and to):
         return False
 
@@ -70,7 +72,7 @@ def send_whatsapp(to, params):
         "to": str(to),
         "type": "template",
         "template": {
-            "name": config.WA_TEMPLATE,
+            "name": template or config.WA_TEMPLATE,
             "language": {"code": config.WA_LANG},
             "components": [{
                 "type": "body",
@@ -100,22 +102,49 @@ def send_whatsapp(to, params):
 # =========================================================
 #                      DISPATCH
 # =========================================================
-def notify(subscriber, telegram_msg, wa_params):
+def notify(subscriber, telegram_msg, wa_params, wa_template=None):
     """Envoie la meme alerte sur tous les canaux configures pour l'abonne."""
+    ok = False
     if subscriber.get("telegram"):
-        send_telegram(subscriber["telegram"], telegram_msg)
+        ok = send_telegram(subscriber["telegram"], telegram_msg) or ok
     if subscriber.get("whatsapp"):
-        send_whatsapp(subscriber["whatsapp"], wa_params)
+        ok = send_whatsapp(subscriber["whatsapp"], wa_params, wa_template) or ok
+    return ok
 
 
 def broadcast(alerts):
-    """alerts = liste de dicts {msg, wa_params, recipients, sort_key}.
-    Les meilleures offres sont envoyees en DERNIER pour rester en haut
-    de la conversation."""
+    """alerts = [{id, msg, wa_params, recipients, sort_key, wa_template?}]
+
+    CHAQUE destinataire a son PROPRE historique : une offre n'est envoyee
+    qu'aux clients qui ne l'ont pas deja recue. Ajouter un client n'envoie
+    donc rien aux autres, et supprimer le fichier d'un client lui renvoie
+    tout sans deranger personne.
+
+    L'offre est marquee AVANT l'envoi : en cas de coupure on prefere rater
+    une alerte plutot que d'en envoyer cent en double.
+    """
     import time
+    import store
+
     alerts.sort(key=lambda a: a.get("sort_key", 0))
+    envois = 0
+    touchees = 0
+
     for item in alerts:
-        for sub in item["recipients"]:
-            notify(sub, item["msg"], item["wa_params"])
+        offer_id = item.get("id")
+        destinataires = [s for s in item["recipients"]
+                         if offer_id is None or not store.client_a_vu(s.get("name"), offer_id)]
+        if not destinataires:
+            continue
+        touchees += 1
+        for sub in destinataires:
+            if offer_id is not None:
+                store.client_marquer(sub.get("name"), offer_id)
+            notify(sub, item["msg"], item["wa_params"], item.get("wa_template"))
+            envois += 1
             time.sleep(0.4)
-    return len(alerts)
+
+    store.enregistrer_clients()
+    if envois:
+        log(f"📨 {touchees} offres -> {envois} envois")
+    return touchees

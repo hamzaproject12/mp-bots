@@ -121,8 +121,6 @@ def _extract_row(row):
 # =========================================================
 def run(context):
     """context = BrowserContext Playwright partage. Retourne (ok, alerts)."""
-    seen_list = store.load_seen(NAME)
-    seen_ids = set(seen_list)
     alerts = []
 
     today = datetime.now()
@@ -214,7 +212,9 @@ def run(context):
                     full_text, buyer, objet, deadline, href = _extract_row(row)
 
                     offer_id = hashlib.md5(full_text.encode("utf-8")).hexdigest()
-                    if offer_id in seen_ids:
+                    # Historique par client : on ne saute que si TOUS l'ont recue
+                    _abos = [x for x in config.SUBSCRIBERS if x.get("ao")]
+                    if store.tous_ont_vu(_abos, offer_id):
                         continue
 
                     score, reason = scorer(objet, buyer)
@@ -276,10 +276,7 @@ def run(context):
                     break
 
         # On memorise AVANT l'envoi : mieux vaut rater une alerte que spammer.
-        for a in alerts:
-            seen_list.append(a["id"])
-        if alerts:
-            store.save_seen(NAME, seen_list)
+        # L'historique est tenu PAR CLIENT au moment de l'envoi (notifier.broadcast)
 
         return True, alerts
 
