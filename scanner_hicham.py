@@ -155,7 +155,7 @@ def _postback(page, action, label, timeout=60000):
 # On cherche le LIBELLE dans le texte de la page et on prend ce qui suit.
 # Plus robuste qu'un identifiant technique si le portail change sa mise en page.
 _CHAMPS = {
-    "estimation": r"Estimation\s*\(\s*en\s*Dhs\s*TTC\s*\)\s*:?\s*([^\n]+)",
+    "estimation": r"Estimation\s*\(\s*en\s*Dhs\s*TTC\s*\)[\s:*]*([^\n]+)",
     "caution":    r"Caution\s+provisoire[^:\n]{0,30}:?\s*([^\n]+)",
     "quals":      r"Qualifications?[^:\n]{0,30}:?\s*([^\n]+(?:\n(?!\s*\w+\s*:)[^\n]+)*)",
 }
@@ -188,9 +188,24 @@ _REVELER_JS = """
 """
 
 
+_ZONES_JS = """
+() => {
+  const res = [];
+  document.querySelectorAll("[id$='_labelReferentielZoneText']").forEach(v => {
+    const bloc = v.closest("[id$='panelReferentielZoneText']");
+    const t = bloc ? bloc.querySelector("[id$='_titre']") : null;
+    res.push([t ? t.textContent : '', v.textContent]);
+  });
+  return res;
+}
+"""
+
+
 def _valeur_propre(brut):
     """Nettoie une valeur lue ; vide si c'est en fait le libelle suivant."""
-    v = re.sub(r"\s+", " ", brut or "").strip(" :\t")
+    v = re.sub(r"\s+", " ", brut or "")
+    v = v.split("@@@@")[0]                    # texte d'info-bulle du portail
+    v = re.sub(r"^[\s:*]+", "", v).strip()    # etoile "champ obligatoire", ":"
     if not v or _LIBELLES.match(v):
         return ""
     return v[:400]
@@ -270,6 +285,20 @@ def lire_fiche(context, url):
 
         texte = page.locator("body").inner_text()
         out = _extraire(texte)
+
+        # Champ "Estimation" : le portail le range dans un bloc a identifiants
+        # fixes (..._titre / ..._labelReferentielZoneText). On le lit DIRECTEMENT,
+        # c'est plus fiable que le texte de la page.
+        try:
+            champs = page.evaluate(_ZONES_JS) or []
+            for titre, valeur in champs:
+                if re.search(r"estimation", titre or "", re.I):
+                    v = _valeur_propre(valeur)
+                    if v:
+                        out["estimation"] = v
+                        break
+        except Exception:
+            pass
 
         # 3) dernier recours : textContent (inclut meme le texte cache)
         if not (out["estimation"] or out["caution"] or out["quals"]):
