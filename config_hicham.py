@@ -17,6 +17,7 @@ CLIENT = "hicham"
 # telegram : chat_id, None => pas de Telegram
 ABONNES = [
     {"name": "Hicham", "telegram": None, "whatsapp": "212661723762"},
+    {"name": "Pako", "telegram": None, "whatsapp": "212700301878"},
 ]
 
 # Template WhatsApp dedie (8 variables).
