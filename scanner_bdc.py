@@ -46,13 +46,33 @@ def zone_prioritaire(text_lower):
     return any(contient(z, text_lower) for z in config.SPECIAL_ZONES)
 
 
-def scorer(text_lower):
-    """Retourne (score, categorie, mots_trouves).
-    Ne decide PAS du seuil : cherche seulement la MEILLEURE categorie."""
+def _motif_exclusion(text_lower):
+    """Retourne le mot d'exclusion present dans l'annonce, ou None."""
     for exc in config.EXCLUSIONS_BDC:
         if contient(exc, text_lower):
-            return 0, f"Exclu ({exc})", []
+            return exc
+    return None
 
+
+def _meilleure_categorie(text_lower):
+    best_score, best_cat, best_mots = 0, "Pas de mots-clés", []
+    for cat, mots in config.KEYWORDS.items():
+        trouves = [m for m in mots if contient(m, text_lower)]
+        if len(trouves) > best_score:
+            best_score, best_cat, best_mots = len(trouves), cat, trouves
+    return best_score, best_cat, best_mots
+
+
+def scorer(text_lower):
+    """Retourne (score, categorie, mots_trouves).
+    Ne decide PAS du seuil : cherche seulement la MEILLEURE categorie.
+
+    Une exclusion bloque l'offre, SAUF si le score depasse SEUIL_FORCE_BDC.
+    Exemple reel : "Organisation des sessions de formation ... et de nettoyage
+    des touffes" marque 3 (formation, organisation, agri) ; le mot "nettoyage"
+    ne doit pas faire perdre une offre de formation agricole."""
+    # Ces deux regles bloquent TOUJOURS : elles ne se declenchent justement
+    # qu'en l'ABSENCE des mots du metier, un score eleve est donc impossible.
     if contient("hébergement", text_lower):
         if not any(contient(x, text_lower) for x in
                    ["web", "site", "cloud", "serveur", "plateforme", "logiciel", "données"]):
@@ -64,11 +84,14 @@ def scorer(text_lower):
         if not any(contient(t, text_lower) for t in training_words):
             return 0, "Exclu (Impression seule)", []
 
-    best_score, best_cat, best_mots = 0, "Pas de mots-clés", []
-    for cat, mots in config.KEYWORDS.items():
-        trouves = [m for m in mots if contient(m, text_lower)]
-        if len(trouves) > best_score:
-            best_score, best_cat, best_mots = len(trouves), cat, trouves
+    best_score, best_cat, best_mots = _meilleure_categorie(text_lower)
+
+    motif = _motif_exclusion(text_lower)
+    if motif:
+        if best_score <= config.SEUIL_FORCE_BDC:
+            return 0, f"Exclu ({motif})", []
+        log(f"   ↗️ [BDC] exclusion '{motif}' ignoree : score {best_score} "
+            f"({', '.join(best_mots)})")
 
     return best_score, best_cat, best_mots
 

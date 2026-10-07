@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import config
 import store
 from notifier import log
+from scanner_bdc import contient   # meme comparaison de mots que le bot BDC
 
 NAME = "ao"
 
@@ -22,18 +23,40 @@ ROWS_SELECTOR = ".table-results tbody tr"
 
 
 def scorer(objet, buyer):
+    """Retourne (score, raison).
+
+    La whitelist d'acheteurs reste le FILTRE PRINCIPAL : une offre d'un
+    acheteur non cible n'est jamais retenue, quels que soient ses mots-cles.
+    Les mots-cles (config.KEYWORDS_AO) mesurent si l'offre est dans le metier
+    et permettent de passer outre une exclusion quand le score depasse
+    SEUIL_FORCE_AO.
+
+    Ils sont cherches dans l'OBJET seulement : le nom de l'acheteur contient
+    presque toujours "agriculture", ce qui donnerait +1 a toutes les offres."""
     objet_lower = (objet or "").lower()
     buyer_lower = (buyer or "").lower()
 
+    mots = [m for m in config.KEYWORDS_AO if contient(m, objet_lower)]
+    score = len(mots)
+
+    motif = None
     for exc in config.EXCLUSIONS_AO:
         if exc in objet_lower:
-            return 0, f"Exclu ({exc})"
+            motif = exc
+            break
         if exc in buyer_lower:
-            return 0, f"Exclu Acheteur ({exc})"
+            motif = f"acheteur {exc}"
+            break
+
+    if motif and score <= config.SEUIL_FORCE_AO:
+        return 0, f"Exclu ({motif})"
 
     for target in config.TARGET_BUYERS:
         if target.lower() in buyer_lower:
-            return 100, "Agri"
+            if motif:
+                log(f"   ↗️ [AO] exclusion '{motif}' ignoree : score {score} "
+                    f"({', '.join(mots)})")
+            return 100 + score, f"Agri (score {score}: {', '.join(mots) or '-'})"
 
     return 0, "Acheteur Non-Cible"
 

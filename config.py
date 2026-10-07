@@ -104,6 +104,12 @@ SUBSCRIBERS = [
 SEUIL_EVENT = int(os.getenv("SEUIL_EVENT", "2"))    # Event & Formation : 2 mots mini
 SEUIL_DEFAUT = int(os.getenv("SEUIL_DEFAUT", "1"))  # autres categories : 1 mot suffit
 
+# Un mot d'exclusion est un VETO, SAUF si le score le depasse. Un objet long
+# peut citer une prestation annexe ("et de nettoyage des touffes") sans que
+# cela change la nature du marche : l'offre reste pour le client.
+SEUIL_FORCE_BDC = int(os.getenv("SEUIL_FORCE_BDC", "2"))  # BDC : envoi si score > 2
+SEUIL_FORCE_AO = int(os.getenv("SEUIL_FORCE_AO", "1"))    # AO  : envoi si score > 1
+
 KEYWORDS = {
     "Dév & Web": ["développement", "application", "web", "portail", "logiciel",
                   "plateforme", "maintenance", "site internet", "app", "digital"],
@@ -187,6 +193,18 @@ TARGET_BUYERS = [
     # --- AGENCES ---
     "AGENCE NATIONALE POUR LE DEVELOPPEMENT DES ZONES OASIENNES",
     "AGENCE POUR LE DEVELOPPEMENT AGRICOLE",
+]
+
+# Mots-cles cherches dans l'OBJET des appels d'offres.
+# Ils ne remplacent PAS la whitelist d'acheteurs, qui reste le filtre
+# principal : ils mesurent si l'offre est dans le metier, et permettent de
+# passer outre une exclusion quand le score depasse SEUIL_FORCE_AO.
+# Cherches dans l'objet SEULEMENT : le nom de l'acheteur contient presque
+# toujours "agriculture", ce qui donnerait +1 a toutes les offres.
+KEYWORDS_AO = [
+    "formation", "atelier", "renforcement de capacité", "organisation",
+    "animation", "sensibilisation", "conception", "enquête", "étude",
+    "conseil agricole", "conseil", "agri",
 ]
 
 EXCLUSIONS_AO = [

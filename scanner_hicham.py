@@ -23,6 +23,7 @@ import unicodedata
 from functools import lru_cache
 from datetime import datetime, timedelta
 from difflib import SequenceMatcher
+from urllib.parse import urljoin
 
 import config
 import store
@@ -188,15 +189,85 @@ _REVELER_JS = """
 """
 
 
-_ZONES_JS = """
+# Le portail range chaque information dans un element a IDENTIFIANT STABLE
+# (..._cautionProvisoire, ..._qualification, ..._labelReferentielZoneText).
+# On les lit DIRECTEMENT : plus fiable que de fouiller le texte de la page,
+# et ca marche meme quand le bloc est replie derriere un (+).
+_FICHE_JS = """
 () => {
-  const res = [];
-  document.querySelectorAll("[id$='_labelReferentielZoneText']").forEach(v => {
+  const T = e => e ? (e.textContent || '').replace(/\s+/g, ' ').trim() : '';
+  const liste = e => {
+    if (!e) return '';
+    const li = [...e.querySelectorAll('li')].map(x => T(x)).filter(Boolean);
+    return li.length ? li.join(' ; ') : T(e);
+  };
+  const champ = nom => document.querySelector(
+      "[id$='idEntrepriseConsultationSummary_" + nom + "']");
+
+  let estimation = '';
+  document.querySelectorAll(
+    "[id*='idEntrepriseConsultationSummary'][id$='_labelReferentielZoneText']"
+  ).forEach(v => {
     const bloc = v.closest("[id$='panelReferentielZoneText']");
     const t = bloc ? bloc.querySelector("[id$='_titre']") : null;
-    res.push([t ? t.textContent : '', v.textContent]);
+    if (!estimation && t && /estimation/i.test(t.textContent)) estimation = T(v);
   });
-  return res;
+
+  // Lien "Detail des lots" : href="javascript:popUp('index.php?page=...')"
+  let urlLots = '';
+  const a = document.querySelector("[id$='_linkDetailLots']");
+  if (a) {
+    const h = (a.getAttribute('href') || '') + ' ' + (a.getAttribute('onclick') || '');
+    const m = h.match(/popUp\('([^']+)'/);
+    if (m) urlLots = m[1];
+  }
+
+  return {estimation: estimation,
+          caution: T(champ('cautionProvisoire')),
+          quals: liste(champ('qualification')),
+          nbLots: T(champ('nbrLots')),
+          urlLots: urlLots};
+}
+"""
+
+# Fenetre "Detail des lots" : memes libelles, mais un jeu par lot, indexe par
+# repeaterLots_ctl0, ctl1, ctl2... C'est la SEULE source des montants quand la
+# consultation est allotie (la page principale les laisse vides).
+_LOTS_JS = """
+() => {
+  const T = e => e ? (e.textContent || '').replace(/\s+/g, ' ').trim() : '';
+  const liste = e => {
+    if (!e) return '';
+    const li = [...e.querySelectorAll('li')].map(x => T(x)).filter(Boolean);
+    return li.length ? li.join(' ; ') : T(e);
+  };
+  const index = e => {
+    const m = (e.id || '').match(/repeaterLots_ctl(\d+)_/);
+    return m ? parseInt(m[1], 10) : null;
+  };
+  const lots = {};
+  const lot = i => (lots[i] = lots[i] || {estimation: '', caution: '', quals: ''});
+
+  document.querySelectorAll(
+    "[id*='repeaterLots_ctl'][id$='_labelReferentielZoneText']"
+  ).forEach(v => {
+    const i = index(v);
+    if (i === null) return;
+    const bloc = v.closest("[id$='panelReferentielZoneText']");
+    const t = bloc ? bloc.querySelector("[id$='_titre']") : null;
+    if (t && /estimation/i.test(t.textContent) && !lot(i).estimation)
+      lot(i).estimation = T(v);
+  });
+  document.querySelectorAll(
+    "[id*='repeaterLots_ctl'][id$='_cautionProvisoire']"
+  ).forEach(v => { const i = index(v); if (i !== null) lot(i).caution = T(v); });
+  document.querySelectorAll(
+    "[id*='repeaterLots_ctl'][id$='_qualification']"
+  ).forEach(v => { const i = index(v); if (i !== null) lot(i).quals = liste(v); });
+
+  return Object.keys(lots).map(Number).sort((a, b) => a - b)
+           .map(i => ({n: i + 1, estimation: lots[i].estimation,
+                       caution: lots[i].caution, quals: lots[i].quals}));
 }
 """
 
@@ -253,9 +324,40 @@ def _qualif_courte(texte_quals):
     return parts[-1][:120]
 
 
+def _lire_lots(context, url):
+    """Ouvre la fenetre 'Detail des lots'. Retourne une liste de dicts
+    {n, estimation, caution, qualif, classe}, vide si illisible."""
+    page = context.new_page()
+    page.route("**/*.{png,jpg,jpeg,gif,woff,woff2,ico}", lambda r: r.abort())
+    try:
+        page.goto(url, timeout=45000, wait_until="domcontentloaded")
+        brut = page.evaluate(_LOTS_JS) or []
+    except Exception as e:
+        log(f"   ⚠️ [{NAME}] detail des lots illisible : {str(e)[:70]}")
+        return []
+    finally:
+        try:
+            page.close()
+        except Exception:
+            pass
+
+    lots = []
+    for l in brut:
+        quals = _valeur_propre(l.get("quals"))
+        lots.append({
+            "n": l.get("n"),
+            "estimation": _valeur_propre(l.get("estimation")),
+            "caution": _valeur_propre(l.get("caution")),
+            "qualif": _qualif_courte(quals),
+            "classe": _classe(quals),
+        })
+    return lots
+
+
 def lire_fiche(context, url):
-    """Ouvre la fiche, revele les blocs replies, retourne un dict de champs.
-    En cas d'echec, retourne un dict vide : l'alerte partira quand meme."""
+    """Lit la fiche de detail. Retourne un dict de champs, plus 'lots' quand
+    la consultation est allotie. En cas d'echec : dict vide, l'alerte part
+    quand meme avec 'Non precise'."""
     page = context.new_page()
     page.route("**/*.{png,jpg,jpeg,gif,woff,woff2,ico}", lambda r: r.abort())
     try:
@@ -265,62 +367,50 @@ def lire_fiche(context, url):
         except Exception:
             pass
 
-        # 1) on essaie de cliquer sur le (+) comme un humain
-        for sel in ("a.toggle-detail", "img[src*='plus']", "a[id*='expand']",
-                    "span.ui-icon-plus", "a:has-text('+')"):
+        brut = page.evaluate(_FICHE_JS) or {}
+        quals = _valeur_propre(brut.get("quals"))
+        out = {
+            "estimation": _valeur_propre(brut.get("estimation")),
+            "caution": _valeur_propre(brut.get("caution")),
+            "quals": quals,
+            "qualif": _qualif_courte(quals),
+            "classe": _classe(quals),
+            "lots": [],
+        }
+
+        # Consultation allotie : la page principale laisse les montants vides,
+        # tout est dans la fenetre "Detail des lots", un jeu par lot.
+        relatif = brut.get("urlLots") or ""
+        if relatif:
+            out["lots"] = _lire_lots(context, urljoin(page.url, relatif))
+            if out["lots"]:
+                log(f"   📦 [{NAME}] {len(out['lots'])} lots lus "
+                    f"({brut.get('nbLots') or 'allotissement'})")
+
+        # Dernier recours : l'ancienne lecture par le texte de la page.
+        # On ne devoile les blocs caches QUE la : sur une consultation allotie
+        # cela produit un texte enorme et inutilisable.
+        if not out["lots"] and not (out["estimation"] or out["caution"] or quals):
             try:
-                el = page.locator(sel).first
-                if el.count() > 0 and el.is_visible():
-                    el.click(timeout=5000)
-                    page.wait_for_timeout(1200)
-                    break
-            except Exception:
-                continue
+                page.evaluate(_REVELER_JS)
+                texte = page.locator("body").inner_text()
+                secours = _extraire(texte)
+                if any(secours.values()):
+                    out.update(secours)
+                manquants = [k for k in ("estimation", "caution", "quals")
+                             if not out.get(k)]
+                log(f"   🔬 [{NAME}] lecture de secours ({len(texte)} car.), "
+                    f"manquants={manquants}")
+                for mot in ("estimation", "caution", "qualification"):
+                    log(f"      · {mot} → {_extrait_autour(texte, mot)}")
+            except Exception as e:
+                log(f"   ⚠️ [{NAME}] lecture de secours impossible : {str(e)[:60]}")
 
-        # 2) et surtout on force l'affichage de tout ce qui reste cache
-        try:
-            page.evaluate(_REVELER_JS)
-        except Exception as e:
-            log(f"   ⚠️ [{NAME}] revelation des blocs impossible : {str(e)[:60]}")
-
-        texte = page.locator("body").inner_text()
-        out = _extraire(texte)
-
-        # Champ "Estimation" : le portail le range dans un bloc a identifiants
-        # fixes (..._titre / ..._labelReferentielZoneText). On le lit DIRECTEMENT,
-        # c'est plus fiable que le texte de la page.
-        try:
-            champs = page.evaluate(_ZONES_JS) or []
-            for titre, valeur in champs:
-                if re.search(r"estimation", titre or "", re.I):
-                    v = _valeur_propre(valeur)
-                    if v:
-                        out["estimation"] = v
-                        break
-        except Exception:
-            pass
-
-        # 3) dernier recours : textContent (inclut meme le texte cache)
-        if not (out["estimation"] or out["caution"] or out["quals"]):
-            try:
-                brut = page.evaluate("document.body.textContent") or ""
-                # textContent n'a plus les retours a la ligne : on les remet
-                # avant chaque libelle connu pour que les motifs fonctionnent.
-                brut = re.sub(r"\s+", " ", brut)
-                brut = re.sub(r"(Estimation|Caution provisoire|Qualification)",
-                              r"\n\1", brut, flags=re.I)
-                texte = brut
-                out = _extraire(texte)
-            except Exception:
-                pass
-
-        # Diagnostic : si un champ manque, on montre ce que la page contient
-        manquants = [k for k in ("estimation", "caution", "quals") if not out.get(k)]
-        if manquants or config.DEBUG_SCORING:
-            log(f"   🔬 [{NAME}] fiche lue ({len(texte)} car.), manquants={manquants}")
-            for mot in ("estimation", "caution", "qualification"):
-                log(f"      · {mot} → {_extrait_autour(texte, mot)}")
+        if config.DEBUG_SCORING:
+            log(f"   🔬 [{NAME}] estimation={out['estimation'] or '-'} | "
+                f"caution={out['caution'] or '-'} | lots={len(out['lots'])}")
         return out
+
     except Exception as e:
         log(f"   ⚠️ [{NAME}] fiche illisible : {str(e)[:70]}")
         return {}
@@ -339,16 +429,131 @@ def _ou(valeur, defaut="Non precise"):
     return v if v else defaut
 
 
-def construire_messages(d):
-    """Retourne (message_telegram, parametres_whatsapp)."""
-    qualif = _ou(d["qualif"], "")
-    classe = d["classe"]
+def _qual_txt(qualif, classe):
+    qualif = (qualif or "").strip()
     if qualif and classe:
-        qual_txt = f"{qualif} — Classe {classe}"
-    elif classe:
-        qual_txt = f"Classe {classe}"
+        return f"{qualif} — Classe {classe}"
+    if classe:
+        return f"Classe {classe}"
+    return qualif
+
+
+def _montant(txt):
+    """'1 611 758,40' ou '30 000,00 DH' -> float. None si illisible."""
+    t = re.sub(r"[^0-9,.]", "", (txt or "").replace("\u00a0", " "))
+    t = t.replace(".", "").replace(",", ".")
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+def _fmt_montant(v):
+    """2007206.4 -> '2 007 206,40' (format du portail)."""
+    return f"{v:,.2f}".replace(",", " ").replace(".", ",")
+
+
+def _court(txt, maxi):
+    """Les variables d'un modele WhatsApp ne doivent pas etre trop longues :
+    le corps du message est plafonne par Meta."""
+    t = (txt or "").strip()
+    return t if len(t) <= maxi else t[:maxi - 1].rstrip() + "…"
+
+
+def _resume_lots(lots, cle, maxi):
+    """'L1 : x · L2 : y' sur UNE SEULE ligne (une variable de modele WhatsApp
+    ne peut pas contenir de retour a la ligne). Si tous les lots portent la
+    meme valeur, on ne l'ecrit qu'une fois."""
+    valeurs = [(l.get("n"), (l.get(cle) or "").strip()) for l in lots]
+    remplies = [v for _, v in valeurs if v]
+    if not remplies:
+        return ""
+    if len(remplies) == len(valeurs) and len(set(remplies)) == 1:
+        return _court(remplies[0], maxi)
+    return _court(" · ".join(f"L{n} : {v or '-'}" for n, v in valeurs), maxi)
+
+
+def _qualif_lots(lots, maxi):
+    """Les lots portent presque toujours la MEME qualification, seule la classe
+    change. On ecrit alors le libelle une fois et on liste les classes :
+    'Travaux de seguia... — Classes L1 : 4 · L2 : 3'."""
+    libelles = {(l.get("qualif") or "").strip() for l in lots}
+    libelles.discard("")
+    classes = [(l.get("n"), (l.get("classe") or "").strip()) for l in lots]
+    if len(libelles) == 1 and any(c for _, c in classes):
+        lib = libelles.pop()
+        if len({c for _, c in classes}) == 1:
+            return _court(_qual_txt(lib, classes[0][1]), maxi)
+        suite = " · ".join(f"L{n} : {c or '-'}" for n, c in classes)
+        return _court(f"{lib} — Classes {suite}", maxi)
+    return _resume_lots(lots, "qual_txt", maxi)
+
+
+# Meta plafonne le CORPS du message a 1024 caracteres. Le texte fixe du modele
+# 'alerte_ao_travaux' en occupe 405 : il reste donc ~595 pour les 8 variables.
+# Au-dela, Meta refuse l'envoi ; on degrade donc le detail des lots plutot que
+# de perdre l'alerte. Le detail complet reste dans le message Telegram.
+BUDGET_WA = 595
+
+
+def _ajuster(wa, replis):
+    """Rabote les variables jusqu'a tenir dans le budget.
+    `replis` = [(position, texte_de_repli)] dans l'ORDRE DE SACRIFICE :
+    on perd d'abord le detail de l'estimation (le total suffit), puis celui
+    de la caution, et la qualification en dernier car c'est elle qui dit a
+    l'entreprise si elle peut soumissionner."""
+    for pos, repli in replis:
+        if sum(len(x) for x in wa) <= BUDGET_WA:
+            return wa
+        if repli and len(repli) < len(wa[pos]):
+            wa[pos] = repli
+    if sum(len(x) for x in wa) > BUDGET_WA:
+        # Reste trop long : c'est l'objet (variable 3) qui deborde.
+        reste = sum(len(x) for i, x in enumerate(wa) if i != 2)
+        wa[2] = _court(wa[2], max(60, BUDGET_WA - reste))
+    return wa
+
+
+def construire_messages(d):
+    """Retourne (message_telegram, parametres_whatsapp).
+
+    Les 8 variables du modele 'alerte_ao_travaux' sont FIXES. Quand la
+    consultation est allotie, on fait donc tenir le detail des lots dans les
+    memes variables (estimation / caution / qualification), sur une ligne.
+    """
+    lots = d.get("lots") or []
+    for l in lots:
+        l["qual_txt"] = _qual_txt(l.get("qualif"), l.get("classe"))
+
+    if lots:
+        est = _resume_lots(lots, "estimation", 300)
+        montants = [_montant(l.get("estimation")) for l in lots]
+        if est and all(m is not None for m in montants) and len(lots) > 1:
+            est = _court(f"Total {_fmt_montant(sum(montants))} "
+                         f"({len(lots)} lots) · {est}", 340)
+        caution = _resume_lots(lots, "caution", 300)
+        qual_txt = _qualif_lots(lots, 300)
+        total = (f"Total {_fmt_montant(sum(montants))} ({len(lots)} lots)"
+                 if all(m is not None for m in montants) else
+                 f"{len(lots)} lots, voir le dossier")
+        renvoi = f"Voir le detail des {len(lots)} lots"
+        replis = [(4, total), (5, renvoi), (6, renvoi)]
     else:
-        qual_txt = _ou(qualif)
+        est = d.get("estimation") or ""
+        caution = d.get("caution") or ""
+        qual_txt = _qual_txt(d.get("qualif"), d.get("classe"))
+        replis = []
+
+    bloc_lots = ""
+    if lots:
+        lignes = [f"📦 *Allotissement :* {len(lots)} lots"]
+        for l in lots:
+            lignes.append(
+                f"  • *L{l['n']}* — 💰 {_ou(l.get('estimation'), '-')}"
+                f" | 🛡️ {_ou(l.get('caution'), '-')}"
+                f" | 🏗️ {_ou(l.get('qual_txt'), '-')}"
+            )
+        bloc_lots = "\n".join(lignes) + "\n━━━━━━━━━━━━━━━━━━━━\n"
 
     msg = (
         f"🏛️🏛️ **APPEL D'OFFRES — TRAVAUX** 🏛️🏛️\n"
@@ -360,25 +565,37 @@ def construire_messages(d):
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"📝 {d['objet']}\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"💰 *Estimation :* {_ou(d['estimation'])}\n"
-        f"🛡️ *Caution provisoire :* {_ou(d['caution'])}\n"
-        f"🏗️ *Qualification :* {qual_txt}\n"
+        f"{bloc_lots}"
+        f"💰 *Estimation :* {_ou(est)}\n"
+        f"🛡️ *Caution provisoire :* {_ou(caution)}\n"
+        f"🏗️ *Qualification :* {_ou(qual_txt)}\n"
         f"📅 *Limite de remise :* `{_ou(d['deadline'])}`\n\n"
         f"🔗 [Voir la consultation]({d['link']})"
     )
 
-    # 8 variables, dans l'ordre du template alerte_ao_travaux
+    # 8 variables, dans l'ordre du modele alerte_ao_travaux (inchange).
+    # Meta refuse un parametre contenant un retour a la ligne, une tabulation
+    # ou 4 espaces de suite : d'ou _une_ligne().
     wa = [
         d["buyer"],
         d["ref"],
         d["objet"],
         _ou(d["deadline"]),
-        _ou(d["estimation"]),
-        _ou(d["caution"]),
-        qual_txt or "Non precise",
+        _ou(est),
+        _ou(caution),
+        _ou(qual_txt),
         d["link"],
     ]
+    wa = _ajuster([_une_ligne(v) for v in wa], replis)
+    trop = sum(len(v) for v in wa) - BUDGET_WA
+    if trop > 0:
+        log(f"   ⚠️ [{NAME}] message WhatsApp encore trop long de {trop} car. "
+            f"({d.get('ref')})")
     return msg, wa
+
+
+def _une_ligne(v):
+    return re.sub(r"[ \t]{4,}", "   ", re.sub(r"\s*\n\s*", " ", str(v or ""))).strip()
 
 
 # =========================================================
@@ -551,6 +768,7 @@ def run(context):
                 "caution": detail.get("caution", ""),
                 "qualif": detail.get("qualif", ""),
                 "classe": detail.get("classe", ""),
+                "lots": detail.get("lots") or [],
             })
             if not detail:
                 log(f"   ⚠️ [{NAME}] detail absent pour {r['ref']}, alerte partielle")
