@@ -102,14 +102,32 @@ def send_whatsapp(to, params, template=None):
 # =========================================================
 #                      DISPATCH
 # =========================================================
-def notify(subscriber, telegram_msg, wa_params, wa_template=None):
-    """Envoie la meme alerte sur tous les canaux configures pour l'abonne."""
-    ok = False
+def canaux(subscriber):
+    """Canaux configures pour cet abonne."""
+    c = set()
     if subscriber.get("telegram"):
-        ok = send_telegram(subscriber["telegram"], telegram_msg) or ok
+        c.add("telegram")
     if subscriber.get("whatsapp"):
-        ok = send_whatsapp(subscriber["whatsapp"], wa_params, wa_template) or ok
-    return ok
+        c.add("whatsapp")
+    return c
+
+
+def notify(subscriber, telegram_msg, wa_params, wa_template=None, seulement=None):
+    """Envoie l'alerte et retourne l'ensemble des canaux REUSSIS.
+
+    `seulement` limite l'envoi a certains canaux : au 2e passage, on ne
+    retente que celui qui avait echoue, pour ne pas renvoyer un message
+    deja recu sur l'autre."""
+    cibles = canaux(subscriber)
+    if seulement is not None:
+        cibles &= set(seulement)
+    reussis = set()
+    if "telegram" in cibles and send_telegram(subscriber["telegram"], telegram_msg):
+        reussis.add("telegram")
+    if "whatsapp" in cibles and send_whatsapp(subscriber["whatsapp"],
+                                              wa_params, wa_template):
+        reussis.add("whatsapp")
+    return reussis
 
 
 def broadcast(alerts):
@@ -138,10 +156,29 @@ def broadcast(alerts):
             continue
         touchees += 1
         for sub in destinataires:
-            if offer_id is not None:
-                store.client_marquer(sub.get("name"), offer_id)
-            notify(sub, item["msg"], item["wa_params"], item.get("wa_template"))
-            envois += 1
+            nom = sub.get("name")
+            attendus = canaux(sub)
+            if not attendus:
+                continue
+
+            # Canaux deja partis lors d'un passage precedent : on ne les
+            # refait pas, seul ce qui a echoue est retente.
+            deja = store.canaux_livres(nom, offer_id)
+            restants = attendus - deja
+            if not restants:
+                store.noter_livraison(nom, offer_id, deja, attendus)
+                continue
+
+            reussis = notify(sub, item["msg"], item["wa_params"],
+                             item.get("wa_template"), seulement=restants)
+            envois += len(reussis)
+
+            # On marque APRES l'envoi : une offre non delivree doit rester
+            # candidate, sinon elle est perdue en silence pour ce client.
+            trace = store.noter_livraison(nom, offer_id, deja | reussis, attendus)
+            if trace:
+                log(trace)
+            store.enregistrer_clients()
             time.sleep(0.4)
 
     store.enregistrer_clients()

@@ -166,6 +166,96 @@ def tous_ont_vu(abonnes, offer_id):
     return all(client_a_vu(a.get("name"), offer_id) for a in abonnes)
 
 
+# =========================================================
+#        LIVRAISONS PARTIELLES (un canal sur deux a echoue)
+# =========================================================
+# attente_client_<slug>.json = {offer_id: {"ok": ["telegram"], "essais": 2}}
+#
+# Tant qu'un canal manque, l'offre n'entre PAS dans l'historique : le scanner
+# la represente au passage suivant et seul le canal manquant est retente.
+# Sans ca, un echec WhatsApp pendant qu'un Telegram passe faisait marquer
+# l'offre comme envoyee : le client ne la recevait jamais sur WhatsApp et
+# plus rien dans les logs n'en parlait.
+MAX_ESSAIS = int(os.getenv("MAX_ESSAIS_CANAL", "6"))   # 6 passages = 24 h
+
+_attente = {}   # {slug: {"data": {...}, "sale": bool}}
+
+
+def _chemin_attente(nom):
+    return os.path.join(config.DATA_PATH, f"attente_client_{slug(nom)}.json")
+
+
+def _charger_attente(nom):
+    s = slug(nom)
+    if s in _attente:
+        return _attente[s]
+    try:
+        with open(_chemin_attente(nom), "r") as f:
+            data = {k: dict(v) for k, v in json.load(f).items()}
+    except Exception:
+        data = {}
+    _attente[s] = {"data": data, "sale": False}
+    return _attente[s]
+
+
+def canaux_livres(nom, offer_id):
+    """Canaux pour lesquels cette offre est DEJA partie chez ce client."""
+    if not offer_id:
+        return set()
+    return set(_charger_attente(nom)["data"].get(offer_id, {}).get("ok", []))
+
+
+def noter_livraison(nom, offer_id, livres, attendus):
+    """Enregistre l'etat d'envoi. Retourne le message a journaliser, ou "".
+
+    livres / attendus : ensembles de noms de canaux ("telegram", "whatsapp").
+    """
+    if not offer_id:
+        return ""
+    e = _charger_attente(nom)
+    fiche = e["data"].get(offer_id, {"ok": [], "essais": 0})
+
+    if livres >= attendus:                       # tous les canaux sont passes
+        client_marquer(nom, offer_id)
+        if e["data"].pop(offer_id, None) is not None:
+            e["sale"] = True
+        return ""
+
+    fiche = {"ok": sorted(livres), "essais": fiche.get("essais", 0) + 1}
+    manquants = ", ".join(sorted(attendus - livres))
+
+    if fiche["essais"] >= MAX_ESSAIS:
+        # On abandonne : sinon le bot retenterait indefiniment un canal casse.
+        client_marquer(nom, offer_id)
+        e["data"].pop(offer_id, None)
+        e["sale"] = True
+        return (f"   ⛔ [{nom}] abandon apres {fiche['essais']} essais sur "
+                f"{manquants} : l'offre ne sera plus proposee")
+
+    e["data"][offer_id] = fiche
+    e["sale"] = True
+    return (f"   ↻ [{nom}] {manquants} en echec (essai {fiche['essais']}"
+            f"/{MAX_ESSAIS}), nouvelle tentative au prochain passage")
+
+
+def _enregistrer_attente():
+    for s, e in _attente.items():
+        if not e["sale"]:
+            continue
+        # Garde-fou : un fichier d'attente ne doit pas gonfler indefiniment.
+        if len(e["data"]) > config.MAX_SEEN:
+            e["data"] = dict(list(e["data"].items())[-config.MAX_SEEN:])
+        chemin = _chemin_attente(s)
+        tmp = chemin + ".tmp"
+        try:
+            with open(tmp, "w") as f:
+                json.dump(e["data"], f)
+            os.replace(tmp, chemin)
+            e["sale"] = False
+        except Exception as ex:
+            log(f"❌ ecriture attente {s} : {ex}")
+
+
 def enregistrer_clients():
     """Ecriture atomique des historiques modifies. A appeler en fin de passage."""
     for s, e in _cache.items():
@@ -180,6 +270,7 @@ def enregistrer_clients():
             e["sale"] = False
         except Exception as ex:
             log(f"❌ ecriture historique {s} : {ex}")
+    _enregistrer_attente()
     _marquer_migration()
 
 

@@ -241,7 +241,7 @@ def run(context):
                         # Sans cette trace, une offre deja marquee disparait des
                         # logs : impossible de savoir pourquoi elle n'arrive pas.
                         if config.DEBUG_SCORING:
-                            log(f"   ↩️ [AO] deja envoyee a tous | {buyer[:45]}")
+                            log(f"   ↩️ [AO] deja envoyee a tous | {offer_id} | {buyer[:45]}")
                         continue
 
                     score, reason = scorer(objet, buyer)
