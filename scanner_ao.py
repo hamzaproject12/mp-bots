@@ -238,6 +238,10 @@ def run(context):
                     # Historique par client : on ne saute que si TOUS l'ont recue
                     _abos = [x for x in config.SUBSCRIBERS if x.get("ao")]
                     if store.tous_ont_vu(_abos, offer_id):
+                        # Sans cette trace, une offre deja marquee disparait des
+                        # logs : impossible de savoir pourquoi elle n'arrive pas.
+                        if config.DEBUG_SCORING:
+                            log(f"   ↩️ [AO] deja envoyee a tous | {buyer[:45]}")
                         continue
 
                     score, reason = scorer(objet, buyer)
