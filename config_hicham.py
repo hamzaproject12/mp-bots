@@ -29,7 +29,7 @@ WA_TEMPLATE = os.getenv("WA_TEMPLATE_HICHAM", "alerte_ao_travaux")
 # =========================================================
 # Nombre maxi de fiches de detail ouvertes par passage.
 # Mettre 5 au premier essai, puis monter une fois les logs verifies.
-MAX_FICHES = int(os.getenv("HICHAM_MAX_FICHES", "5"))
+MAX_FICHES = int(os.getenv("HICHAM_MAX_FICHES", "50"))
 
 # Pour tout renvoyer a Hicham : supprimer data/seen_client_hicham.json
 # depuis la console Railway. Aucun autre client n'est affecte.
