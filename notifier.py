@@ -7,6 +7,7 @@ import requests
 from datetime import datetime
 
 import config
+import config_site
 
 
 def log(msg):
@@ -109,15 +110,22 @@ def canaux(subscriber):
         c.add("telegram")
     if subscriber.get("whatsapp"):
         c.add("whatsapp")
+    # Le site n'est un canal que s'il est configure (SITE_URL + SITE_TOKEN).
+    # Variables absentes => aucun abonne n'a ce canal, rien ne change.
+    if subscriber.get("site") and config_site.actif():
+        c.add("site")
     return c
 
 
-def notify(subscriber, telegram_msg, wa_params, wa_template=None, seulement=None):
+def notify(subscriber, telegram_msg, wa_params, wa_template=None, seulement=None,
+           site_payload=None, clients=None):
     """Envoie l'alerte et retourne l'ensemble des canaux REUSSIS.
 
     `seulement` limite l'envoi a certains canaux : au 2e passage, on ne
     retente que celui qui avait echoue, pour ne pas renvoyer un message
-    deja recu sur l'autre."""
+    deja recu sur l'autre.
+
+    `site_payload` / `clients` : donnees du canal "site" (voir site_travaux)."""
     cibles = canaux(subscriber)
     if seulement is not None:
         cibles &= set(seulement)
@@ -127,11 +135,21 @@ def notify(subscriber, telegram_msg, wa_params, wa_template=None, seulement=None
     if "whatsapp" in cibles and send_whatsapp(subscriber["whatsapp"],
                                               wa_params, wa_template):
         reussis.add("whatsapp")
+    if "site" in cibles:
+        if not site_payload:
+            # Le scanner n'a pas pu construire le payload (cles de
+            # rapprochement absentes). C'est definitif : inutile de retenter
+            # six fois, on solde le canal. La raison est deja journalisee.
+            reussis.add("site")
+        else:
+            import site_travaux      # tardif : site_travaux importe notifier
+            if site_travaux.envoyer(site_payload, clients or []):
+                reussis.add("site")
     return reussis
 
 
 def broadcast(alerts):
-    """alerts = [{id, msg, wa_params, recipients, sort_key, wa_template?}]
+    """alerts = [{id, msg, wa_params, recipients, sort_key, wa_template?, site?}]
 
     CHAQUE destinataire a son PROPRE historique : une offre n'est envoyee
     qu'aux clients qui ne l'ont pas deja recue. Ajouter un client n'envoie
@@ -169,8 +187,13 @@ def broadcast(alerts):
                 store.noter_livraison(nom, offer_id, deja, attendus)
                 continue
 
+            # Le site recoit la liste des clients deja servis par cette
+            # offre : c'est lui qui s'en sert pour le rapprochement.
+            clients = [s.get("name") for s in item["recipients"]
+                       if not s.get("site")]
             reussis = notify(sub, item["msg"], item["wa_params"],
-                             item.get("wa_template"), seulement=restants)
+                             item.get("wa_template"), seulement=restants,
+                             site_payload=item.get("site"), clients=clients)
             envois += len(reussis)
 
             # On marque APRES l'envoi : une offre non delivree doit rester

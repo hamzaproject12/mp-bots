@@ -21,13 +21,14 @@ import math
 import hashlib
 import unicodedata
 from functools import lru_cache
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from difflib import SequenceMatcher
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit, parse_qs
 
 import config
 import store
 import config_hicham as CH
+import config_site as CS
 from notifier import log
 
 NAME = CH.CLIENT
@@ -202,7 +203,8 @@ _FICHE_JS = """
     return li.length ? li.join(' ; ') : T(e);
   };
   const champ = nom => document.querySelector(
-      "[id$='idEntrepriseConsultationSummary_" + nom + "']");
+      "[id$='idEntrepriseConsultationSummary_" + nom + "']")
+      || document.querySelector("[id$='_" + nom + "']");
 
   let estimation = '';
   document.querySelectorAll(
@@ -226,7 +228,15 @@ _FICHE_JS = """
           caution: T(champ('cautionProvisoire')),
           quals: liste(champ('qualification')),
           nbLots: T(champ('nbrLots')),
-          urlLots: urlLots};
+          urlLots: urlLots,
+          // Champs lus pour le site externe : ils n'entrent dans aucun
+          // message Telegram ou WhatsApp.
+          objet: T(champ('objet')),
+          dateLimite: T(champ('dateHeureLimiteRemisePlis')),
+          lieu: T(champ('lieuxExecutions')),
+          categorie: T(champ('categoriePrincipale')),
+          modePassation: T(champ('modePassation')),
+          entiteAchat: T(champ('entiteAchat'))};
 }
 """
 
@@ -280,6 +290,15 @@ def _valeur_propre(brut):
     if not v or _LIBELLES.match(v):
         return ""
     return v[:400]
+
+
+def _texte_propre(brut, maxi=400):
+    """Nettoyage d'un champ lu par IDENTIFIANT : pas de garde-fou sur les
+    libelles (un objet qui commence par 'Lot...' ou 'Date...' est legitime)."""
+    v = re.sub(r"\s+", " ", brut or "")
+    v = v.split("@@@@")[0]
+    v = re.sub(r"^[\s:*]+", "", v).strip()
+    return v[:maxi]
 
 
 def _extraire(texte):
@@ -350,6 +369,7 @@ def _lire_lots(context, url):
             "caution": _valeur_propre(l.get("caution")),
             "qualif": _qualif_courte(quals),
             "classe": _classe(quals),
+            "quals": quals,      # brut : sert au payload du site
         })
     return lots
 
@@ -376,6 +396,14 @@ def lire_fiche(context, url):
             "qualif": _qualif_courte(quals),
             "classe": _classe(quals),
             "lots": [],
+            # L'objet de la liste de resultats est tronque par le portail
+            # ("..."). Celui de la fiche est complet : on ne le rabote pas.
+            "objet_complet": _texte_propre(brut.get("objet"), 2000),
+            "date_limite": _texte_propre(brut.get("dateLimite"), 40),
+            "lieu": _texte_propre(brut.get("lieu")),
+            "categorie": _texte_propre(brut.get("categorie")),
+            "mode_passation": _texte_propre(brut.get("modePassation")),
+            "entite_achat": _texte_propre(brut.get("entiteAchat")),
         }
 
         # Consultation allotie : la page principale laisse les montants vides,
@@ -599,12 +627,178 @@ def _une_ligne(v):
 
 
 # =========================================================
+#                 SORTIE SITE (payload JSON)
+# =========================================================
+SITE_SOURCE = "marchespublics.gov.ma"
+TZ_MAROC = "Africa/Casablanca"
+TZ_REPLI = timezone(timedelta(hours=1))     # si zoneinfo n'a pas la base tz
+
+# "27/10/2026" ou "27/10/2026 10:00" ou "27/10/2026 a 10:00:00"
+_RE_DATE = re.compile(
+    r"(\d{1,2})/(\d{1,2})/(\d{4})(?:\D{0,4}(\d{1,2}):(\d{2})(?::(\d{2}))?)?")
+
+
+def _cles_annonce(url):
+    """(refConsultation, orgAcronyme) du lien de la consultation.
+    urllib.parse et pas une regex : le portail est libre de changer l'ordre
+    des parametres ou d'en ajouter."""
+    try:
+        q = parse_qs(urlsplit(url or "").query)
+    except Exception:
+        return "", ""
+    lire = lambda nom: (q.get(nom) or [""])[0].strip()
+    return lire("refConsultation"), lire("orgAcronyme")
+
+
+def _fuseau():
+    try:
+        from zoneinfo import ZoneInfo
+        return ZoneInfo(TZ_MAROC)
+    except Exception:
+        return TZ_REPLI
+
+
+def _iso_limite(txt):
+    """'27/10/2026 10:00' -> '2026-10-27T10:00:00+01:00'. None si illisible."""
+    m = _RE_DATE.search(txt or "")
+    if not m:
+        return None
+    j, mo, a, h, mi, sec = m.groups()
+    try:
+        return datetime(int(a), int(mo), int(j), int(h or 0), int(mi or 0),
+                        int(sec or 0), tzinfo=_fuseau()).isoformat()
+    except ValueError:
+        return None
+
+
+def _date_iso(txt):
+    """'15/10/2026' -> '2026-10-15'. None si illisible : on n'invente pas."""
+    m = _RE_DATE.search(txt or "")
+    if not m:
+        return None
+    try:
+        return date(int(m.group(3)), int(m.group(2)), int(m.group(1))).isoformat()
+    except ValueError:
+        return None
+
+
+def _qualifications(quals_brut, qualif="", classe=""):
+    """[{'libelle': ..., 'classe': '5'}]. La fiche liste les qualifications
+    dans un <ul>, recollees par ' ; ' a la lecture."""
+    out = []
+    for bloc in re.split(r"\s;\s", quals_brut or ""):
+        if not bloc.strip():
+            continue
+        lib, cl = _qualif_courte(bloc), _classe(bloc)
+        if lib or cl:
+            out.append({"libelle": lib or None, "classe": cl or None})
+    if not out and ((qualif or "").strip() or (classe or "").strip()):
+        out.append({"libelle": (qualif or "").strip() or None,
+                    "classe": (classe or "").strip() or None})
+    return out
+
+
+def _texte_ou_none(v):
+    t = (v or "").strip()
+    return t or None
+
+
+# "M4 / DPAG - DIRECTEUR PROVINCIAL D'AGRICULTURE SAFI"
+#  prefixe ^   ^acronyme ^nom propre
+# Le 1er tiret separe : un nom d'acheteur peut en contenir d'autres.
+_RE_ENTITE = re.compile(r"^[^/]+/\s*([^/\-]+?)\s*-\s*(.+)$", re.S)
+
+
+def _decouper_entite(txt):
+    """'M4 / DPAG - DIRECTEUR ...' -> ('DPAG', 'DIRECTEUR ...').
+    Motif absent -> ('', txt) : on ne devine rien."""
+    t = (txt or "").strip()
+    m = _RE_ENTITE.match(t)
+    if not m:
+        return "", t
+    return m.group(1).strip(), m.group(2).strip()
+
+
+def construire_payload_site(d):
+    """Payload envoye au site externe, ou None si l'offre serait rejetee.
+
+    On ne retient que les deux refus certains (422 cote site) : sans
+    refConsultation il n'y a pas de cle d'annonce, sans date limite l'offre
+    n'est pas exploitable. Inutile de les pousser six fois pour rien.
+    L'acronyme d'organisme, lui, n'est pas bloquant : le site sait
+    rapprocher sur le seul nom de l'acheteur."""
+    ref_annonce, org_portail = _cles_annonce(d.get("link"))
+    if not ref_annonce:
+        log(f"   ⚠️ [{NAME}] pas d'envoi au site ({d.get('ref') or '?'}) : "
+            f"refConsultation absent du lien")
+        return None
+
+    date_limite = _iso_limite(d.get("date_limite") or d.get("deadline"))
+    if not date_limite:
+        log(f"   ⚠️ [{NAME}] pas d'envoi au site ({d.get('ref') or '?'}) : "
+            f"date limite illisible "
+            f"({(d.get('date_limite') or d.get('deadline') or '-')[:40]})")
+        return None
+
+    # orgAcronyme de l'URL vaut "q1s" pour tout le monde (c'est le ministere).
+    # Le vrai acronyme de l'organisme est le jeton du milieu de entiteAchat.
+    acronyme, nom_acheteur = _decouper_entite(d.get("entite_achat"))
+
+    lots = [{
+        "lot": l.get("n"),
+        "intitule": None,          # le portail ne publie pas d'intitule par lot
+        "estimation": _montant(l.get("estimation")),
+        "caution_provisoire": _montant(l.get("caution")),
+        "qualifications": _qualifications(l.get("quals"), l.get("qualif"),
+                                          l.get("classe")),
+    } for l in (d.get("lots") or [])]
+
+    return {
+        "source": SITE_SOURCE,
+        "ref_annonce": ref_annonce,
+        "org_acronyme": acronyme or org_portail or None,
+        # Celui de l'URL, conserve a part : il ne distingue pas les organismes.
+        "org_portail": org_portail or None,
+        "reference": _texte_ou_none(d.get("ref")),
+        # L'objet de la liste est tronque par le portail : on prefere celui
+        # de la fiche, et on ne retombe sur l'autre que s'il manque.
+        "objet": _texte_ou_none(d.get("objet_complet")) or _texte_ou_none(d.get("objet")),
+        # Le site rapproche sur une cle derivee du NOM : jamais la chaine
+        # prefixee "M4 / DPAG - ...", qui ne se normalisera pas comme
+        # l'historique. La chaine complete part a cote, pour information.
+        "acheteur": _texte_ou_none(nom_acheteur) or _texte_ou_none(d.get("buyer")),
+        "entite_achat": _texte_ou_none(d.get("entite_achat")),
+        "publie_le": _date_iso(d.get("publie")),
+        "date_limite": date_limite,
+        "estimation": _montant(d.get("estimation")),
+        "caution_provisoire": _montant(d.get("caution")),
+        "lots": lots,
+        "qualifications": _qualifications(d.get("quals"), d.get("qualif"),
+                                          d.get("classe")),
+        "lieu": _texte_ou_none(d.get("lieu")),
+        "themes": list(d.get("concepts") or []),
+        # Hors format de base, avec org_portail et entite_achat : a retirer
+        # si l'API refuse les champs inconnus.
+        "categorie_principale": _texte_ou_none(d.get("categorie")),
+        "mode_passation": _texte_ou_none(d.get("mode_passation")),
+        "url": d.get("link"),
+    }
+
+
+# =========================================================
 #                        SCAN
 # =========================================================
 def run(context):
     """context = BrowserContext partage. Retourne (ok, alertes)."""
     alertes = []
     proches_signales = set()
+
+    # Le site est un destinataire de PLUS, avec son propre historique. Il
+    # rattrape donc les offres deja parties chez les clients SANS leur
+    # renvoyer quoi que ce soit : broadcast() filtre client par client.
+    destinataires = CH.ABONNES + ([CS.ABONNE] if CS.actif() else [])
+    if CS.actif():
+        log(f"🛰️ [{NAME}] sortie site active ({len(CH.ABONNES)} clients + site)")
 
     today = datetime.now()
     pub_debut = (today - timedelta(days=CH.JOURS_PUBLICATION)).strftime("%d/%m/%Y")
@@ -698,7 +892,7 @@ def run(context):
                     offer_id = hashlib.md5(texte.encode("utf-8")).hexdigest()
                     # Historique par client : on n'ouvre la fiche (couteux)
                     # que si au moins un abonne ne l'a pas encore recue.
-                    if store.tous_ont_vu(CH.ABONNES, offer_id):
+                    if store.tous_ont_vu(destinataires, offer_id):
                         continue
 
                     el_o = ligne.locator("div[id*='_panelBlocObjet']")
@@ -711,6 +905,16 @@ def run(context):
                     deadline = (cells.first.inner_text().replace("\n", " ").strip()
                                 if cells.count() else "")
 
+                    # Date de publication : au mieux la 1re colonne. Si elle
+                    # n'en contient pas, le payload du site portera null.
+                    publie = ""
+                    try:
+                        tds = ligne.locator("td")
+                        if tds.count():
+                            publie = tds.first.inner_text().replace("\n", " ").strip()
+                    except Exception:
+                        publie = ""
+
                     liens = ligne.locator("td.actions a")
                     href = liens.first.get_attribute("href") if liens.count() else None
                     link = (f"https://www.marchespublics.gov.ma/index.php{href}"
@@ -722,7 +926,8 @@ def run(context):
                         ref = m.group(1).strip()
 
                     retenues.append(dict(id=offer_id, buyer=buyer, objet=objet,
-                                         deadline=deadline, link=link, ref=ref))
+                                         deadline=deadline, link=link, ref=ref,
+                                         publie=publie))
                 except Exception as e:
                     msg_e = str(e)[:70]
                     if "context was destroyed" in msg_e or "Target closed" in msg_e:
@@ -769,6 +974,14 @@ def run(context):
                 "qualif": detail.get("qualif", ""),
                 "classe": detail.get("classe", ""),
                 "lots": detail.get("lots") or [],
+                # Champs reserves au site : aucun message ne les utilise.
+                "quals": detail.get("quals", ""),
+                "objet_complet": detail.get("objet_complet", ""),
+                "date_limite": detail.get("date_limite", ""),
+                "lieu": detail.get("lieu", ""),
+                "categorie": detail.get("categorie", ""),
+                "mode_passation": detail.get("mode_passation", ""),
+                "entite_achat": detail.get("entite_achat", ""),
             })
             if not detail:
                 log(f"   ⚠️ [{NAME}] detail absent pour {r['ref']}, alerte partielle")
@@ -779,7 +992,8 @@ def run(context):
                 "wa_params": wa,
                 "wa_template": CH.WA_TEMPLATE,
                 "id": r["id"],
-                "recipients": CH.ABONNES,
+                "recipients": destinataires,
+                "site": construire_payload_site(r) if CS.actif() else None,
             })
             log(f"   ✅ [{NAME}] retenue : {r['buyer'][:45]} | {r['ref']}")
             time.sleep(0.8)
