@@ -196,6 +196,12 @@ def broadcast(alerts):
                              site_payload=item.get("site"), clients=clients)
             envois += len(reussis)
 
+            # Trace NOMINATIVE de ce qui est reellement parti. Sans elle, les
+            # logs ne disent que "N envois" sans dire a qui : impossible de
+            # faire un rapport par client.
+            if reussis:
+                log(f"   ✉️ [{nom}] {', '.join(sorted(reussis))}")
+
             # On marque APRES l'envoi : une offre non delivree doit rester
             # candidate, sinon elle est perdue en silence pour ce client.
             trace = store.noter_livraison(nom, offer_id, deja | reussis, attendus)
