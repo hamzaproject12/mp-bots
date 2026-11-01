@@ -31,8 +31,10 @@ SCANNERS = [s.strip().lower() for s in os.getenv("SCANNERS", "bdc,ao").split(","
 DEBUG_SCORING = os.getenv("DEBUG_SCORING", "0") == "1"
 
 # Chat Telegram de l'ADMINISTRATEUR : seul destinataire des alertes de
-# rupture de scraping (sentinelle.py). Vide = aucun envoi. Jamais un client.
-ADMIN_TELEGRAM = os.getenv("ADMIN_TELEGRAM", "").strip()
+# rupture de scraping (sentinelle.py). Jamais un client. Defaut : le chat de
+# l'administrateur ; la variable d'environnement le remplace, et la definir
+# VIDE (ADMIN_TELEGRAM=) desactive l'envoi.
+ADMIN_TELEGRAM = os.getenv("ADMIN_TELEGRAM", "1952904877").strip()
 # Pas deux messages de rupture pour le meme scanner a moins de N heures.
 SENTINELLE_SILENCE_H = float(os.getenv("SENTINELLE_SILENCE_H", "6"))
 # WA_TEST et STARTUP_PING supprimes : un deploiement ne doit JAMAIS

@@ -35,7 +35,7 @@ recoivent quoi que ce soit**.
 | Variable | Defaut | Role |
 |---|---|---|
 | `RUN_MODE` | `once` | `once` (un passage) / `loop` (24h/24) / `selftest` / `amorcage` (voir plus bas) |
-| `ADMIN_TELEGRAM` | *(vide)* | chat Telegram de l'administrateur : seul destinataire des alertes de rupture de scraping. Vide = aucun envoi |
+| `ADMIN_TELEGRAM` | `1952904877` (admin) | chat Telegram de l'administrateur : seul destinataire des alertes de rupture de scraping. Definie vide = aucun envoi |
 | `SENTINELLE_SILENCE_H` | `6` | pas deux messages de rupture pour le meme scanner a moins de N heures |
 | `SCANNERS` | `bdc,ao` | scanners actifs, separes par des virgules |
 | `DATA_PATH` | `data` | dossier persistant (`/app/data/v2` en production) |
