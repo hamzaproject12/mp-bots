@@ -34,7 +34,9 @@ recoivent quoi que ce soit**.
 
 | Variable | Defaut | Role |
 |---|---|---|
-| `RUN_MODE` | `once` | `once` (un passage) / `loop` (24h/24) / `selftest` |
+| `RUN_MODE` | `once` | `once` (un passage) / `loop` (24h/24) / `selftest` / `amorcage` (voir plus bas) |
+| `ADMIN_TELEGRAM` | *(vide)* | chat Telegram de l'administrateur : seul destinataire des alertes de rupture de scraping. Vide = aucun envoi |
+| `SENTINELLE_SILENCE_H` | `6` | pas deux messages de rupture pour le meme scanner a moins de N heures |
 | `SCANNERS` | `bdc,ao` | scanners actifs, separes par des virgules |
 | `DATA_PATH` | `data` | dossier persistant (`/app/data/v2` en production) |
 | `SLEEP_OK` / `SLEEP_FAIL` | `14400` / `900` | sommeil en mode `loop` (s) |
@@ -44,6 +46,31 @@ recoivent quoi que ce soit**.
 
 Un deploiement en `once` ou `loop` est **toujours silencieux** : aucun message
 de controle n'est envoye. Pour tester un canal : `RUN_MODE=selftest`.
+
+### Mode `amorcage` (apres un changement d'identifiants d'offres)
+
+`RUN_MODE=amorcage` fait un passage complet, marque **toutes** les offres
+retenues comme vues pour les **clients** et n'envoie **rien**, sur aucun canal.
+Le site (`SiteTravaux`) n'est **pas** marque : il rattrape ainsi les appels
+d'offres deja en ligne (son endpoint est idempotent sur `ref_annonce`). Le log
+final dit `🌱 amorcage : N offres marquees pour les clients, site exclu`. A lancer une fois apres un deploiement qui
+change les identifiants (ex. passage du md5 du texte aux identifiants du portail
+`bdc-<n>` / `ao-<n>`), puis revenir en `once` / `loop`.
+
+### Sentinelle
+
+Si le portail annonce N > 0 offres mais qu'un scanner n'en extrait aucune, le
+log contient `🚨 [<scanner>] RUPTURE : N annoncees, 0 extraites` et, si
+`ADMIN_TELEGRAM` est renseigne, l'administrateur recoit un message qui dit quel
+scanner, combien d'offres annoncees, zero extraite, et que les selecteurs sont
+a revoir. Aucun client ne recoit jamais ce message.
+
+Une rupture n'est **pas** un echec de passage : le rythme reste celui d'un
+passage normal (`SLEEP_OK`), reessayer dans 15 minutes ne servirait a rien. Pour
+ne pas inonder l'administrateur, la sentinelle garde une memoire sur disque
+(`DATA_PATH/sentinelle.json`, `{"<scanner>": "<horodatage>"}`) : pas deux
+messages pour le meme scanner a moins de `SENTINELLE_SILENCE_H` heures
+(6 par defaut). La rupture reste journalisee a chaque passage.
 
 ### Telegram / WhatsApp
 
@@ -99,8 +126,10 @@ Cles de rapprochement :
 
 * `ref_annonce` — `refConsultation` de l'URL de la consultation.
 * `org_acronyme` — jeton du milieu de `entiteAchat` (`M4 / **DPAG** - ...`).
-  Le `orgAcronyme` de l'URL ne convient pas : il vaut `q1s` pour tous les
-  acheteurs (c'est le ministere). Il est conserve a part dans `org_portail`.
+  Le `orgAcronyme` de l'URL valait `q1s` pour tous les acheteurs avant la
+  migration d'octobre 2026 ; il varie maintenant selon l'acheteur, mais le
+  jeton de `entiteAchat` reste prioritaire (comportement inchange). L'acronyme
+  de l'URL est conserve a part dans `org_portail`.
 * `acheteur` — le NOM seul, jamais la chaine prefixee ; la chaine complete
   part dans `entite_achat`.
 

@@ -18,10 +18,9 @@ import os
 import re
 import time
 import math
-import hashlib
 import unicodedata
 from functools import lru_cache
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from difflib import SequenceMatcher
 from urllib.parse import urljoin, urlsplit, parse_qs
 
@@ -29,10 +28,13 @@ import config
 import store
 import config_hicham as CH
 import config_site as CS
+import portail
+import sentinelle
 from notifier import log
 
 NAME = CH.CLIENT
-ROWS_SELECTOR = ".table-results tbody tr"
+# Depuis octobre 2026 le portail affiche des cartes, plus un tableau.
+ROWS_SELECTOR = portail.CARTES_AO
 
 
 # =========================================================
@@ -633,10 +635,6 @@ SITE_SOURCE = "marchespublics.gov.ma"
 TZ_MAROC = "Africa/Casablanca"
 TZ_REPLI = timezone(timedelta(hours=1))     # si zoneinfo n'a pas la base tz
 
-# "27/10/2026" ou "27/10/2026 10:00" ou "27/10/2026 a 10:00:00"
-_RE_DATE = re.compile(
-    r"(\d{1,2})/(\d{1,2})/(\d{4})(?:\D{0,4}(\d{1,2}):(\d{2})(?::(\d{2}))?)?")
-
 
 def _cles_annonce(url):
     """(refConsultation, orgAcronyme) du lien de la consultation.
@@ -659,27 +657,17 @@ def _fuseau():
 
 
 def _iso_limite(txt):
-    """'27/10/2026 10:00' -> '2026-10-27T10:00:00+01:00'. None si illisible."""
-    m = _RE_DATE.search(txt or "")
-    if not m:
-        return None
-    j, mo, a, h, mi, sec = m.groups()
-    try:
-        return datetime(int(a), int(mo), int(j), int(h or 0), int(mi or 0),
-                        int(sec or 0), tzinfo=_fuseau()).isoformat()
-    except ValueError:
-        return None
+    """'Jeu 23 Juil 2026 11:00' ou '27/10/2026 10:00'
+    -> '2026-10-27T10:00:00+01:00'. None si illisible (voir portail.parse_date)."""
+    dt = portail.parse_date(txt)
+    return dt.replace(tzinfo=_fuseau()).isoformat() if dt else None
 
 
 def _date_iso(txt):
-    """'15/10/2026' -> '2026-10-15'. None si illisible : on n'invente pas."""
-    m = _RE_DATE.search(txt or "")
-    if not m:
-        return None
-    try:
-        return date(int(m.group(3)), int(m.group(2)), int(m.group(1))).isoformat()
-    except ValueError:
-        return None
+    """'Jeu 07 Jan 2027' ou '15/10/2026' -> '2027-01-07'. None si illisible :
+    on n'invente pas."""
+    dt = portail.parse_date(txt)
+    return dt.date().isoformat() if dt else None
 
 
 def _qualifications(quals_brut, qualif="", classe=""):
@@ -733,15 +721,19 @@ def construire_payload_site(d):
             f"refConsultation absent du lien")
         return None
 
-    date_limite = _iso_limite(d.get("date_limite") or d.get("deadline"))
+    # La fiche de detail fait foi ; la date de la liste sert de repli si la
+    # fiche manque ou si son champ est illisible.
+    date_limite = (_iso_limite(d.get("date_limite"))
+                   or _iso_limite(d.get("deadline")))
     if not date_limite:
         log(f"   ⚠️ [{NAME}] pas d'envoi au site ({d.get('ref') or '?'}) : "
             f"date limite illisible "
             f"({(d.get('date_limite') or d.get('deadline') or '-')[:40]})")
         return None
 
-    # orgAcronyme de l'URL vaut "q1s" pour tout le monde (c'est le ministere).
-    # Le vrai acronyme de l'organisme est le jeton du milieu de entiteAchat.
+    # Avant la migration d'octobre 2026, orgAcronyme valait "q1s" pour tout le
+    # monde ; il varie maintenant selon l'acheteur. On garde le jeton du milieu
+    # de entiteAchat en priorite (comportement inchange), l'URL en repli.
     acronyme, nom_acheteur = _decouper_entite(d.get("entite_achat"))
 
     lots = [{
@@ -829,15 +821,16 @@ def run(context):
                   "recherche")
 
         if not _settle(page, timeout=30000):
+            # Aucune carte n'apparait. Legitime si le portail annonce 0 offre ;
+            # une rupture s'il en annonce.
+            sentinelle.verifier(NAME, portail.lire_total(page), 0)
             log(f"⚠️ [{NAME}] aucun resultat.")
             return True, alertes
 
-        try:
-            total = int(page.locator(
-                "#ctl0_CONTENU_PAGE_resultSearch_nombreElement").inner_text().strip())
+        total = portail.lire_total(page)
+        if total:
             log(f"📊 [{NAME}] {total} travaux publies.")
-        except Exception:
-            total = 0
+        extraites = 0     # cartes reellement lues (avant tout filtre)
 
         taille_page = 10
         if total > 10:
@@ -859,7 +852,7 @@ def run(context):
             log(f"⚠️ [{NAME}] {pages_total} pages, on s'arrete a {MAX_PAGES}.")
             pages_total = MAX_PAGES
 
-        # ---- Etape 1 : collecte des lignes des acheteurs cibles ----
+        # ---- Etape 1 : collecte des cartes des acheteurs cibles ----
         retenues = []
         for num_page in range(1, pages_total + 1):
             nb = _safe_count(page)
@@ -867,20 +860,20 @@ def run(context):
             if nb == 0:
                 break
 
-            lignes = page.locator(ROWS_SELECTOR)
-            for i in range(nb):
+            try:
+                cartes = portail.lire_cartes_ao(page, NAME)
+            except Exception as e:
+                # La page a pu naviguer sous nos pieds : on tente la suivante.
+                log(f"   ⚠️ [{NAME}] lecture des cartes impossible : {str(e)[:70]}")
+                cartes = []
+
+            for c in cartes:
                 try:
-                    ligne = lignes.nth(i)
-                    if not ligne.is_visible():
-                        continue
-                    texte = ligne.inner_text()
+                    if not (c["ref"] or c["objet"]):
+                        continue          # carte vide : rien d'extrait
+                    extraites += 1
 
-                    el_b = ligne.locator("div[id*='_panelBlocDenomination']")
-                    buyer = (el_b.inner_text()
-                             .replace("Acheteur public\n:", "")
-                             .replace("Acheteur public :", "").strip()
-                             if el_b.count() else "")
-
+                    buyer = c["acheteur"]
                     if not acheteur_cible(buyer):
                         p = acheteur_proche(buyer)
                         if p and buyer and buyer not in proches_signales:
@@ -889,50 +882,23 @@ def run(context):
                                 f"portail='{buyer[:60]}' ≈ cible='{p[:60]}'")
                         continue
 
-                    offer_id = hashlib.md5(texte.encode("utf-8")).hexdigest()
+                    offer_id = c["offer_id"]
                     # Historique par client : on n'ouvre la fiche (couteux)
                     # que si au moins un abonne ne l'a pas encore recue.
                     if store.tous_ont_vu(destinataires, offer_id):
                         continue
 
-                    el_o = ligne.locator("div[id*='_panelBlocObjet']")
-                    objet = (el_o.inner_text()
-                             .replace("Objet\n:", "")
-                             .replace("Objet :", "").strip()
-                             if el_o.count() else "")
-
-                    cells = ligne.locator("td[headers='cons_dateEnd'] .cloture-line")
-                    deadline = (cells.first.inner_text().replace("\n", " ").strip()
-                                if cells.count() else "")
-
-                    # Date de publication : au mieux la 1re colonne. Si elle
-                    # n'en contient pas, le payload du site portera null.
-                    publie = ""
-                    try:
-                        tds = ligne.locator("td")
-                        if tds.count():
-                            publie = tds.first.inner_text().replace("\n", " ").strip()
-                    except Exception:
-                        publie = ""
-
-                    liens = ligne.locator("td.actions a")
-                    href = liens.first.get_attribute("href") if liens.count() else None
-                    link = (f"https://www.marchespublics.gov.ma/index.php{href}"
-                            if href else config.URL_AO)
-
-                    ref = ""
-                    m = re.search(r"\n\s*([0-9A-Za-z][^\n]{2,60})\s*\n\s*Objet", texte)
-                    if m:
-                        ref = m.group(1).strip()
-
-                    retenues.append(dict(id=offer_id, buyer=buyer, objet=objet,
-                                         deadline=deadline, link=link, ref=ref,
-                                         publie=publie))
+                    retenues.append(dict(
+                        id=offer_id, buyer=buyer, objet=c["objet"],
+                        deadline=c["deadline"], ref=c["ref"],
+                        link=c["lien"] or config.URL_AO,
+                        # La liste n'affiche plus de date de publication :
+                        # le payload du site portera null (non bloquant).
+                        publie="",
+                        # Repli si la fiche de detail ne donne pas d'estimation.
+                        estimation_liste=c["estimation"]))
                 except Exception as e:
-                    msg_e = str(e)[:70]
-                    if "context was destroyed" in msg_e or "Target closed" in msg_e:
-                        log(f"   ⚠️ [{NAME}] navigation en cours, page suivante")
-                        break
+                    log(f"   ⚠️ [{NAME}] carte ignoree : {str(e)[:70]}")
                     continue
 
             if num_page < pages_total:
@@ -941,6 +907,11 @@ def run(context):
                                      "#ctl0_CONTENU_PAGE_resultSearch_PagerTop_ctl2"),
                                  "page suivante"):
                     break
+
+        # Sentinelle : le portail annonce des offres mais aucune n'a ete lue.
+        # Une rupture n'est pas un echec de passage (voir sentinelle.py). Rien
+        # n'a ete extrait : la suite du traitement se termine d'elle-meme.
+        sentinelle.verifier(NAME, total, extraites)
 
         log(f"🎯 [{NAME}] {len(retenues)} annonces d'acheteurs cibles (nouvelles)")
 
@@ -960,6 +931,16 @@ def run(context):
 
         log(f"🏷️ [{NAME}] {len(candidates)} correspondent a un theme")
 
+        if config.RUN_MODE == "amorcage":
+            # Rien n'est envoye : inutile d'ouvrir les fiches, et le plafond
+            # MAX_FICHES ne doit pas laisser des offres non marquees (elles
+            # partiraient au premier passage normal).
+            for r in candidates:
+                alertes.append({"sort_key": 0, "msg": "", "wa_params": [],
+                                "id": r["id"], "recipients": destinataires,
+                                "site": None})
+            return True, alertes
+
         if len(candidates) > CH.MAX_FICHES:
             log(f"✂️ [{NAME}] limite a {CH.MAX_FICHES} fiches ce passage "
                 f"(variable HICHAM_MAX_FICHES). {len(candidates) - CH.MAX_FICHES} "
@@ -969,7 +950,9 @@ def run(context):
         for r in candidates:
             detail = lire_fiche(context, r["link"])
             r.update({
-                "estimation": detail.get("estimation", ""),
+                # Estimation de la liste en repli si la fiche n'en donne pas.
+                "estimation": (detail.get("estimation", "")
+                               or r.get("estimation_liste", "")),
                 "caution": detail.get("caution", ""),
                 "qualif": detail.get("qualif", ""),
                 "classe": detail.get("classe", ""),

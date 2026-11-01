@@ -9,17 +9,19 @@ perd son contexte d'execution en plein comptage.
 """
 import time
 import math
-import hashlib
 from datetime import datetime, timedelta
 
 import config
 import store
+import portail
+import sentinelle
 from notifier import log
 from scanner_bdc import contient   # meme comparaison de mots que le bot BDC
 
 NAME = "ao"
 
-ROWS_SELECTOR = ".table-results tbody tr"
+# Depuis octobre 2026 le portail affiche des cartes, plus un tableau.
+ROWS_SELECTOR = portail.CARTES_AO
 
 
 def scorer(objet, buyer):
@@ -111,35 +113,6 @@ def _postback(page, action, label, timeout=60000):
 
 
 # =========================================================
-#                    EXTRACTION
-# =========================================================
-def _extract_row(row):
-    """Retourne (full_text, buyer, objet, deadline, href) ou None."""
-    full_text = row.inner_text()
-
-    buyer_el = row.locator("div[id*='_panelBlocDenomination']")
-    buyer = (buyer_el.inner_text()
-             .replace("Acheteur public\n:", "")
-             .replace("Acheteur public :", "").strip()
-             if buyer_el.count() > 0 else "N/A")
-
-    objet_el = row.locator("div[id*='_panelBlocObjet']")
-    objet = (objet_el.inner_text()
-             .replace("Objet\n:", "")
-             .replace("Objet :", "").strip()
-             if objet_el.count() > 0 else "N/A")
-
-    deadline_cells = row.locator("td[headers='cons_dateEnd'] .cloture-line")
-    deadline = (deadline_cells.first.inner_text().replace("\n", " ").strip()
-                if deadline_cells.count() > 0 else "-")
-
-    link_el = row.locator("td.actions a")
-    href = link_el.first.get_attribute("href") if link_el.count() > 0 else None
-
-    return full_text, buyer, objet, deadline, href
-
-
-# =========================================================
 #                        SCAN
 # =========================================================
 def run(context):
@@ -180,15 +153,16 @@ def run(context):
         )
 
         if not _settle(page, timeout=30000):
+            # Aucune carte n'apparait. Legitime si le portail annonce 0 offre ;
+            # une rupture s'il en annonce.
+            sentinelle.verifier("ao", portail.lire_total(page), 0)
             log("⚠️ [AO] aucun resultat.")
             return True, alerts
 
-        try:
-            count_text = page.locator("#ctl0_CONTENU_PAGE_resultSearch_nombreElement").inner_text()
-            total_results = int(count_text.strip())
+        total_results = portail.lire_total(page)
+        if total_results:
             log(f"📊 [AO] {total_results} offres.")
-        except Exception:
-            total_results = 0
+        extraites = 0     # cartes reellement lues (avant tout filtre)
 
         # --- PASSAGE A 500 PAR PAGE (postback) ---
         page_size = 10
@@ -224,17 +198,25 @@ def run(context):
                 log("⚠️ [AO] page vide, arret de la pagination.")
                 break
 
-            rows = page.locator(ROWS_SELECTOR)
+            try:
+                cartes = portail.lire_cartes_ao(page, "AO")
+            except Exception as e:
+                # La page a pu naviguer sous nos pieds : on tente la suivante.
+                log(f"   ⚠️ [AO] lecture des cartes impossible : {str(e)[:70]}")
+                cartes = []
 
-            for i in range(count_on_page):
+            for i, c in enumerate(cartes):
                 try:
-                    row = rows.nth(i)
-                    if not row.is_visible():
-                        continue
+                    if not (c["ref"] or c["objet"]):
+                        continue          # carte vide : rien d'extrait
+                    extraites += 1
 
-                    full_text, buyer, objet, deadline, href = _extract_row(row)
+                    buyer = c["acheteur"] or "N/A"
+                    objet = c["objet"] or "N/A"
+                    deadline = c["deadline"] or "-"
+                    link = c["lien"] or config.URL_AO
+                    offer_id = c["offer_id"]
 
-                    offer_id = hashlib.md5(full_text.encode("utf-8")).hexdigest()
                     # Historique par client : on ne saute que si TOUS l'ont recue
                     _abos = [x for x in config.SUBSCRIBERS if x.get("ao")]
                     if store.tous_ont_vu(_abos, offer_id):
@@ -252,9 +234,6 @@ def run(context):
 
                     if score <= 0:
                         continue
-
-                    link = (f"https://www.marchespublics.gov.ma/index.php{href}"
-                            if href else config.URL_AO)
 
                     recipients = [s for s in config.SUBSCRIBERS if s.get("ao")]
                     if not recipients:
@@ -281,13 +260,7 @@ def run(context):
                     log(f"   ✅ [AO] retenue : {buyer[:50]}")
 
                 except Exception as e:
-                    msg_err = str(e)[:70]
-                    if "context was destroyed" in msg_err or "Target closed" in msg_err:
-                        # La page a navigue sous nos pieds : inutile de continuer
-                        # cette page, on tente la suivante.
-                        log(f"   ⚠️ [AO] navigation pendant la lecture, on passe a la suite")
-                        break
-                    log(f"   ⚠️ [AO] ligne {i} : {msg_err}")
+                    log(f"   ⚠️ [AO] carte {i} : {str(e)[:70]}")
                     continue
 
             # --- PAGE SUIVANTE (postback) ---
@@ -304,6 +277,10 @@ def run(context):
 
         # On memorise AVANT l'envoi : mieux vaut rater une alerte que spammer.
         # L'historique est tenu PAR CLIENT au moment de l'envoi (notifier.broadcast)
+
+        # Sentinelle : le portail annonce des offres mais aucune n'a ete lue.
+        # Une rupture n'est pas un echec de passage (voir sentinelle.py).
+        sentinelle.verifier("ao", total_results, extraites)
 
         return True, alerts
 

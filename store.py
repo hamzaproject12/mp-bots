@@ -166,6 +166,34 @@ def tous_ont_vu(abonnes, offer_id):
     return all(client_a_vu(a.get("name"), offer_id) for a in abonnes)
 
 
+def marquer_vues(alerts, exclure=()):
+    """Mode amorcage : marque chaque offre comme recue par ses destinataires,
+    sans rien envoyer. Retourne le nombre d'offres marquees.
+
+    `exclure` : noms de destinataires a NE PAS marquer (le site : il doit
+    rattraper les offres deja en ligne). Une offre dont tous les destinataires
+    sont exclus n'est pas comptee.
+
+    Efface aussi une eventuelle livraison partielle en attente : l'offre est
+    consideree comme traitee, rien ne doit etre retente."""
+    exclure = set(exclure)
+    ids = set()
+    for a in alerts:
+        offer_id = a.get("id")
+        if not offer_id:
+            continue
+        for sub in a.get("recipients") or []:
+            nom = sub.get("name")
+            if nom in exclure:
+                continue
+            client_marquer(nom, offer_id)
+            e = _charger_attente(nom)
+            if e["data"].pop(offer_id, None) is not None:
+                e["sale"] = True
+            ids.add(offer_id)
+    return len(ids)
+
+
 # =========================================================
 #        LIVRAISONS PARTIELLES (un canal sur deux a echoue)
 # =========================================================

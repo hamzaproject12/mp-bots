@@ -5,12 +5,13 @@ Filtre par MOTS-CLÉS dans le texte de l'annonce.
 import re
 import time
 import math
-import hashlib
 from functools import lru_cache
 from datetime import datetime, timedelta
 
 import config
 import store
+import portail
+import sentinelle
 from notifier import log
 
 NAME = "bdc"
@@ -118,6 +119,74 @@ def _build_url(date_start, date_end, page_num):
     )
 
 
+CARTES = "article.bdc-card"
+ATTENTE_CARTES_MS = 15000   # delai d'apparition des cartes (reduit par les tests)
+
+# Une evaluation par page (50 cartes) plutot qu'une dizaine d'appels par carte.
+_CARTES_JS = """
+() => {
+  const T = e => e ? (e.textContent || '').replace(/\\s+/g, ' ').trim() : '';
+  return [...document.querySelectorAll('article.bdc-card')].map(card => {
+    const q = s => card.querySelector(s);
+    const titre = q('a.bdc-card__title');
+    const meta = q('.bdc-card__meta');
+    // L'acheteur est le 1er <span> du bloc meta ; le lieu en est un autre.
+    // Si le 1er span EST le lieu, il n'y a pas d'acheteur.
+    const premier = meta ? meta.querySelector(':scope > span') : null;
+    const acheteur = premier && !premier.classList.contains('bdc-card__lieu')
+                     ? premier : null;
+    return {
+      ref: T(q('.bdc-card__ref')),
+      objet: T(titre),
+      href: titre ? (titre.getAttribute('href') || '') : '',
+      jour: T(q('.bdc-card__v')),
+      heure: T(q('.bdc-card__s')),
+      lieu: T(q('.bdc-card__lieu')),
+      acheteur: T(acheteur),
+      badges: [...card.querySelectorAll('.bdc-card__tags .badge')].map(T),
+      texte: (card.innerText || '').trim(),
+    };
+  });
+}
+"""
+
+
+def normaliser_carte(brut):
+    """Brut (retour du JS) -> dict propre. Pure : testable sans navigateur."""
+    href = brut.get("href") or ""
+    # Le site ne prefixe plus par "Reference :" ; on garde ce nettoyage au cas ou.
+    ref = re.sub(r"^\s*r[ée]f[ée]rence\s*:\s*", "", brut.get("ref") or "",
+                 flags=re.I).strip()
+    statut = " ".join(b for b in (brut.get("badges") or []) if b)
+    return {
+        "ref": ref,
+        "objet": (brut.get("objet") or "").strip(),
+        "href": href,
+        "lien": portail.urljoin(portail.PORTAIL, href) if href else "",
+        "date_limite": f"{brut.get('jour') or ''} {brut.get('heure') or ''}".strip(),
+        "lieu": (brut.get("lieu") or "").strip(),
+        "acheteur": (brut.get("acheteur") or "").strip(),
+        "statut": statut,
+        # "Annule", "Annulé", "annulée"... : on compare sans accent
+        "annule": "annul" in portail._sans_accents(statut).lower(),
+        "texte": brut.get("texte") or "",
+    }
+
+
+def texte_score(carte):
+    """Texte analyse par scorer() : reference + objet + lieu.
+
+    L'ACHETEUR n'en fait volontairement PAS partie : son nom contient tres
+    souvent "agri" (DIRECTION PROVINCIALE DE L'AGRICULTURE), ce qui donnerait un
+    point a toutes ses offres et viderait les exclusions de leur sens. Il ne
+    sert qu'a l'affichage dans le message."""
+    return " ".join(x for x in (carte["ref"], carte["objet"], carte["lieu"]) if x)
+
+
+def lire_cartes(page):
+    return [normaliser_carte(b) for b in page.evaluate(_CARTES_JS)]
+
+
 def run(context):
     """context = BrowserContext Playwright partage. Retourne (ok, alerts)."""
     alerts = []
@@ -134,6 +203,8 @@ def run(context):
         log(f"🌍 [BDC] Periode : {date_start} -> {date_end}")
         max_pages = 1
         current_page = 1
+        annoncees = 0     # compteur du portail
+        extraites = 0     # cartes reellement lues (avant tout filtre)
 
         while current_page <= max_pages:
             url = _build_url(date_start, date_end, current_page)
@@ -157,27 +228,45 @@ def run(context):
                     res_text = page.locator(".content__resultat").inner_text()
                     num = re.search(r"\d+", res_text)
                     if num:
-                        max_pages = math.ceil(int(num.group()) / 50)
+                        annoncees = int(num.group())
+                        max_pages = math.ceil(annoncees / 50)
                         log(f"🧠 [BDC] {num.group()} offres ({max_pages} pages)")
                 except Exception:
                     pass
 
             try:
-                page.wait_for_selector(".entreprise__card", timeout=15000)
+                page.wait_for_selector(CARTES, timeout=ATTENTE_CARTES_MS)
             except Exception:
                 log(f"⚠️ [BDC] aucune carte sur la page {current_page}")
                 current_page += 1
                 continue
 
-            cards = page.locator(".entreprise__card")
-            for i in range(cards.count()):
+            try:
+                cartes = lire_cartes(page)
+            except Exception as e:
+                log(f"⚠️ [BDC] lecture des cartes impossible (page {current_page}) : "
+                    f"{str(e)[:80]}")
+                current_page += 1
+                continue
+
+            for c in cartes:
                 try:
-                    card = cards.nth(i)
-                    full_text = card.inner_text()
+                    ref, objet, acheteur = c["ref"], c["objet"], c["acheteur"]
+                    lieu, date_limite, link = c["lieu"], c["date_limite"], c["lien"]
+                    if not (ref or objet):
+                        continue          # carte vide : rien d'extrait
+                    extraites += 1
 
-                    offer_id = hashlib.md5(full_text.encode("utf-8")).hexdigest()
+                    # Un marche annule ne vaut aucune alerte.
+                    if c["annule"]:
+                        if config.DEBUG_SCORING:
+                            log(f"   🚫 [BDC] annulee, ignoree : {ref}")
+                        continue
 
-                    t_lower = full_text.lower()
+                    offer_id = portail.id_bdc(c["href"], c["texte"], "BDC")
+
+                    # L'acheteur est affiche mais JAMAIS score (voir texte_score).
+                    t_lower = texte_score(c).lower()
 
                     # SEUL le filtre mots-cles decide. La zone n'est qu'un bonus.
                     score, category, mots = scorer(t_lower)
@@ -191,20 +280,6 @@ def run(context):
                         continue
 
                     zone = zone_prioritaire(t_lower)
-
-                    links = card.locator(".entreprise__middleSubCard a")
-                    ref = links.nth(0).inner_text().strip()
-                    # Le site prefixe deja par "Référence :" — on evite le doublon
-                    ref = re.sub(r"^\s*r[ée]f[ée]rence\s*:\s*", "", ref, flags=re.I).strip()
-                    objet = links.nth(1).inner_text().replace("Objet :", "").strip()
-
-                    dates = card.locator(".entreprise__rightSubCard--top .font-bold")
-                    date_limite = (f"{dates.nth(0).inner_text().strip()} à "
-                                   f"{dates.nth(1).inner_text().strip()}")
-                    lieu = dates.last.inner_text().strip()
-
-                    href = links.first.get_attribute("href")
-                    link = f"https://www.marchespublics.gov.ma{href}"
 
                     recipients = [
                         s for s in config.SUBSCRIBERS
@@ -224,11 +299,13 @@ def run(context):
                     #title = f"ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
                     title = f"📦 [BDC] ALERTE {category}" + (" — ZONE PRIORITAIRE" if zone else "")
 
+                    ligne_acheteur = f"🏛️ Acheteur: {acheteur}\n" if acheteur else ""
                     msg = (
                         f"{emoji} **{title}**\n━━━━━━━━━━━━\n"
                         f"🎯 Score: {score}\n"
                         f"📅 Limite: `{date_limite}`\n"
-                        f"📍 Lieu: `{lieu}`\n━━━━━━━━━━━━\n"
+                        f"📍 Lieu: `{lieu}`\n"
+                        f"{ligne_acheteur}━━━━━━━━━━━━\n"
                         f"{ref}\nObjet: {objet}\n\n"
                         f"🔗 [Voir l'offre]({link})"
                     )
@@ -248,6 +325,11 @@ def run(context):
             current_page += 1
 
         # L'historique est tenu PAR CLIENT au moment de l'envoi (notifier.broadcast)
+
+        # Sentinelle : le portail annonce des offres mais aucune n'a ete lue.
+        # Une rupture n'est pas un echec de passage (voir sentinelle.py) :
+        # on garde le rythme normal, reessayer dans 15 min ne servirait a rien.
+        sentinelle.verifier("bdc", annoncees, extraites)
 
         return True, alerts
 

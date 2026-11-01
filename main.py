@@ -9,6 +9,11 @@ Modes (variable RUN_MODE) :
   selftest -> SEUL mode qui envoie un message de controle. Aucun scan.
               Un deploiement en once/loop est TOUJOURS silencieux :
               aucun client ne peut savoir qu'il a eu lieu.
+  amorcage -> un passage complet qui marque TOUTES les offres retenues comme
+              vues pour les clients et n'envoie RIEN, sur aucun canal. Le site
+              (SiteTravaux) n'est PAS marque : il rattrape les offres deja en
+              ligne. A lancer une fois apres un changement d'identifiants
+              d'offres, avant de revenir en loop.
 """
 import sys
 import time
@@ -19,6 +24,7 @@ from playwright.sync_api import sync_playwright
 import config
 import store
 import notifier
+import config_site
 from notifier import log
 
 import scanner_bdc
@@ -45,8 +51,10 @@ CHROMIUM_ARGS = [
 ]
 
 
-def run_once():
-    """Un passage complet sur tous les scanners actifs. Retourne True si tout est OK."""
+def run_once(amorcage=False):
+    """Un passage complet sur tous les scanners actifs. Retourne True si tout est OK.
+
+    amorcage=True : on scanne et on marque tout comme vu, sans rien envoyer."""
     actifs = [n for n in config.SCANNERS if n in SCANNERS]
     if not actifs:
         log("⚠️ Aucun scanner actif (voir la variable SCANNERS).")
@@ -54,6 +62,7 @@ def run_once():
 
     all_ok = True
     total = 0
+    marquees = 0
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True, args=CHROMIUM_ARGS)
@@ -76,7 +85,13 @@ def run_once():
 
                 all_ok = all_ok and ok
 
-                if alerts:
+                if amorcage:
+                    # Le site n'est PAS amorce : il doit rattraper les offres
+                    # deja en ligne (son endpoint est idempotent sur ref_annonce).
+                    n = store.marquer_vues(alerts, exclure={config_site.ABONNE["name"]})
+                    marquees += n
+                    log(f"🌱 [{name}] {n} offres marquees")
+                elif alerts:
                     sent = notifier.broadcast(alerts)
                     total += sent
                     log(f"🚀 [{name}] {sent} alertes envoyees.")
@@ -85,6 +100,11 @@ def run_once():
         finally:
             context.close()
             browser.close()
+
+    if amorcage:
+        store.enregistrer_clients()
+        log(f"🌱 amorcage : {marquees} offres marquees pour les clients, site exclu")
+        return all_ok
 
     log(f"✅ Passage termine : {total} alertes au total.")
     return all_ok
@@ -113,6 +133,11 @@ def main():
             "01/01/2027 a 10:00", "Rabat", "https://www.marchespublics.gov.ma",
         ])
         log("🧪 Resultat : " + ("OK ✅" if ok else "ECHEC ❌ (voir erreur ci-dessus)"))
+        sys.exit(0 if ok else 1)
+
+    if config.RUN_MODE == "amorcage":
+        ok = run_once(amorcage=True)
+        log("👋 Sortie (mode amorcage). Repasser en once/loop.")
         sys.exit(0 if ok else 1)
 
     if config.RUN_MODE == "once":

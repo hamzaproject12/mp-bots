@@ -1,0 +1,1132 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>capture reelle du portail — reel_bdc_liste.html</title></head><body>
+<div class="mt-4 py-3 content__subBox">
+      <form name="search_consultation_entreprise" method="get" class="flex flex-col">
+      <div class="d-flex w-100 align-items-center gap-3 mb-2">
+        <label class="text-nowrap searchLabel" for="search_consultation_entreprise_keyword">Recherche par mot clé</label>
+        <input type="text" id="search_consultation_entreprise_keyword" name="search_consultation_entreprise[keyword]" placeholder="Recherche par mot clé" class="form-control">
+        <button class="btn px-4 border" type="submit">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <button type="button" class="btn px-3 border content-icon__settings" data-bs-toggle="collapse" data-bs-target="#searchFiltersDiv" aria-expanded="false" aria-controls="searchFiltersDiv">
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+      </div>
+
+
+      <div class="border border-1 rounded-2 p-3 collapse short-transition" id="searchFiltersDiv">
+        <div class="row mb-2">
+          <div class="col">
+            <label class="form-label" for="search_consultation_entreprise_reference">Référence</label>
+            <input type="text" id="search_consultation_entreprise_reference" name="search_consultation_entreprise[reference]" placeholder="Référence" class="form-control">
+          </div>
+          <div class="col">
+            <label class="form-label" for="search_consultation_entreprise_objet">Objet</label>
+            <input type="text" id="search_consultation_entreprise_objet" name="search_consultation_entreprise[objet]" placeholder="Objet" class="form-control">
+          </div>
+        </div>
+        <div class="row mb-2">
+          <label class="" for="search_consultation_entreprise_dateLimiteStart">Date et heure limite de remise des devis</label>
+          <div class="d-flex flex-row align-items-center justify-content-between">
+            <div class="dateTime flex-grow-1">
+              <input type="hidden" id="search_consultation_entreprise_dateLimiteStart" name="search_consultation_entreprise[dateLimiteStart]" placeholder="Début" class="form-control fp-date flatpickr-input" value="2026-11-01"><input class="form-control fp-date form-control input" placeholder="Début" tabindex="0" type="text" readonly="readonly">
+              <div class="dateTime__icons">
+                <i class="fa-regular fa-calendar-days opencalendar"></i>
+                <i class="fa-solid fa-xmark resetcalendar"></i>
+              </div>
+            </div>
+            <span class="d-block mx-2">à</span>
+            <div class="dateTime flex-grow-1">
+              <input type="hidden" id="search_consultation_entreprise_dateLimiteEnd" name="search_consultation_entreprise[dateLimiteEnd]" placeholder="Fin" class="form-control fp-date flatpickr-input" value="2026-12-31"><input class="form-control fp-date form-control input" placeholder="Fin" tabindex="0" type="text" readonly="readonly">
+              <div class="dateTime__icons">
+                <i class="fa-regular fa-calendar-days opencalendar"></i>
+                <i class="fa-solid fa-xmark resetcalendar"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <label class="" for="search_consultation_entreprise_dateMiseEnLigneStart">Date de mise en ligne</label>
+          <div class="d-flex flex-row align-items-center justify-content-between">
+            <div class="dateTime flex-grow-1">
+              <input type="hidden" id="search_consultation_entreprise_dateMiseEnLigneStart" name="search_consultation_entreprise[dateMiseEnLigneStart]" placeholder="Début" class="form-control fp-date flatpickr-input"><input class="form-control fp-date form-control input" placeholder="Début" tabindex="0" type="text" readonly="readonly">
+              <div class="dateTime__icons">
+                <i class="fa-regular fa-calendar-days opencalendar"></i>
+                <i class="fa-solid fa-xmark resetcalendar"></i>
+              </div>
+            </div>
+            <span class="d-block mx-2">à</span>
+            <div class="dateTime flex-grow-1">
+              <input type="hidden" id="search_consultation_entreprise_dateMiseEnLigneEnd" name="search_consultation_entreprise[dateMiseEnLigneEnd]" placeholder="Fin" class="form-control fp-date flatpickr-input"><input class="form-control fp-date form-control input" placeholder="Fin" tabindex="0" type="text" readonly="readonly">
+              <div class="dateTime__icons">
+                <i class="fa-regular fa-calendar-days opencalendar"></i>
+                <i class="fa-solid fa-xmark resetcalendar"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xl-6">
+            <label class="text-nowrap" for="search_consultation_entreprise_categorie">Catégorie principale</label>
+            <select id="search_consultation_entreprise_categorie" name="search_consultation_entreprise[categorie]" class="form-select"><option value="">Sélectionnez ...</option><option value="1">Travaux</option><option value="2">Fournitures</option><option value="3" selected="selected">Services</option></select>
+          </div>
+
+          <div class="col-xl-6">
+            <label class="" for="search_consultation_entreprise_naturePrestation">Nature de prestation</label>
+            <select id="search_consultation_entreprise_naturePrestation" name="search_consultation_entreprise[naturePrestation]" class="form-select"><option value="">Sélectionnez ...</option><option value="1">Travaux d’aménagement des espaces verts avec ou sans fourniture de graines et plantes</option><option value="2">Travaux d’aménagement et d’entretien des installations militaires</option><option value="3">Travaux d’aménagement, d’entretien et de réparation des bâtiments administratifs</option><option value="4">Travaux d’aménagement, d’entretien et de réparation des logements militaires</option><option value="5">Travaux d’aménagement, d’entretien et de réparation des ouvrages, voies et réseaux</option><option value="6">Travaux d’équipement et de renforcement des postes MT/BT du réseau d’électricité</option><option value="7">Travaux d’installation de matériels divers</option><option value="8">Travaux de branchement et d’extension du réseau d’eau potable et d’électricité</option><option value="9">Travaux de raccordement au réseau d’assainissement et de curage</option><option value="10">Achat d’affiches et d’articles publicitaires</option><option value="11">Achat d’animaux</option><option value="12">Achat d’articles de correction de la vue et articles pour personnes à besoins spécifiques</option><option value="13">Achat d’articles de droguerie, de quincaillerie, d’électricité, de menuiserie et de plomberie sanitaire</option><option value="14">Achat d’habillement</option><option value="15">Achat de badges, de médailles, d’effigies, de fanions, de drapeaux et de portraits</option><option value="16">Achat de carburants et de lubrifiants</option><option value="17">Achat de cartables, de livres, de manuels, et de fournitures scolaires et de matériel d’enseignement</option><option value="18">Achat de cartes géographiques, topographiques, géologiques et de photographies aériennes</option><option value="19">Achat de fournitures de bureau et de documentation</option><option value="20">Achat de matériaux de construction</option><option value="21">Achat de matériel audiovisuel, sonore et de mise en lumière</option><option value="22">Achat de matériel d’éclairage public</option><option value="23">Achat de matériel de diagnostic, de recherche, de détection, de signalisation de défaut et de matériel de mesure</option><option value="24">Achat de matériel de navigation et de transmission</option><option value="25">Achat de matériel de sécurité et de lutte contre l’incendie</option><option value="26">Achat de matériel de transport, de citernes et d’engins</option><option value="27">Achat de matériel électrique, de groupes électrogènes, d’électropompes et de motopompes de chantier</option><option value="28">Achat de matériel et d’équipement de plongée sous-marine</option><option value="29">Achat de matériel et de mobilier de bureau</option><option value="30">Achat de matériel technique, de logiciels et de matériel informatique</option><option value="31">Achat de matériel, de câbles, coffrets de distribution, de poteaux et autres accessoires de branchements moyenne tension et basse tension</option><option value="32">Achat de matériels et articles de sport, de literie, de linge, de couchage, de cuisine et de buanderie</option><option value="33">Achat de matières premières pour laboratoire et enseignement</option><option value="34">Achat de matières premières pour le textile, le cuir, la reliure des documents et autres</option><option value="35">Achat de médicaments</option><option value="36">Achat de mobilier, d’enseignement, de laboratoire et d’exposition</option><option value="37">Achat de papeteries et d’imprimés</option><option value="38">Achat de pièces de rechange et pneumatiques pour véhicules et engins</option><option value="39">Achat de pièces de rechange pour les équipements médicotechniques</option><option value="40">Achat de pièces de rechange pour matériel technique et informatique</option><option value="41">Achat de produits alimentaires pour usage animal</option><option value="42">Achat de produits alimentaires pour usage humain</option><option value="43">Achat de produits chimiques et de laboratoire, pesticides et insecticides</option><option value="44">Achat de produits d’impression, de reproduction et de photographie</option><option value="45">Achat de produits pharmaceutiques non-médicamenteux, de gaz médicaux et de réactifs de laboratoires</option><option value="46">Achat de produits pour traitement d’eau potable</option><option value="47">Achat de produits vétérinaires et de produits d’élevage aquacole</option><option value="48">Fourniture d’alevins, de naissains, de boutures d’algues, d’animaux marins et poissons</option><option value="49">Fourniture d’engrais, de graines, de plantes, de plants et de portoirs</option><option value="50">Fourniture d’équipements médico-techniques et de pièces de rechange y afférentes</option><option value="51">Fourniture de combustibles et de produits de chauffage</option><option value="52">Fourniture de films et de produits radiologiques</option><option value="53">Fourniture de fongibles médicaux et de fils chirurgicaux</option><option value="54">Fourniture de l’instrumentation médicotechnique</option><option value="55">Fourniture de prothèses et orthèses</option><option value="56">Fourniture de sacs et produits d’emballage</option><option value="57">Fourniture de verrerie, petit matériel et outillage de laboratoire</option><option value="58">Fourniture des consommables dentaires</option><option value="59">Fournitures et pièces de rechange pour matériel technique et informatique</option><option value="60">Fournitures et produits d’entretien et de nettoyage</option><option value="61">Fournitures pour inauguration et pose de premières pierres</option><option value="62">Fournitures pour le traitement et la conservation préventive des archives</option><option value="63">Achat de piges</option><option value="64">Achat, développement, production ou coproduction de programmes ou de films destinés à la diffusion par des organismes de radiodiffusion et de télévision et dans les sites électroniques et du temps de diffusion</option><option value="65">Collecte des produits biologiques et sanguins</option><option value="66">Contrôle et expertise techniques</option><option value="67">Direction, animation et participation des artistes, intellectuels, conférenciers et techniciens aux manifestations et activités culturelles</option><option value="68">Entretien et maintenance de logiciels et de progiciels</option><option value="69">Entretien et maintenance des équipements informatique</option><option value="70">Entretien et réparation de matériel technique, de mobilier et des installations techniques</option><option value="71">Entretien, dépoussiérage et traitement chimique des archives et des livres</option><option value="72">Études, conseil et formation</option><option value="73">Location d’engins et de moyens de transport de matériels et matériaux et d’engins</option><option value="74">Location de camions citernes</option><option value="75">Location de matériel et de mobilier</option><option value="76">Location de moyens de transport des personnes (voitures et autocars)</option><option value="77">Location de salles, de stands et de mobilier d’exposition</option><option value="78">Montage et démontage du matériel hydraulique et électromécanique</option><option value="79">Organisation de manifestations culturelles, scientifiques et sportives</option><option value="80">Prestation de jardinage, de gardiennage et de nettoyage</option><option value="81">Prestations d’assistance et de conseil technique, juridique et comptable</option><option value="82">Prestations d’entretien des véhicules et engins</option><option value="83">Prestations d’entretien, de rééquilibrage, d’étalonnage et de réparation des équipements de laboratoires</option><option value="84">Prestations d’impression, de tirage, de reproduction et de photographie</option><option value="85">Prestations de centres d’appels, de télémarketing et de télé-service</option><option value="86">Prestations de collecte et de traitement de déchets hospitaliers</option><option value="87">Prestations de collecte, de traitement et de blanchissage du linge</option><option value="88">Prestations de contrôle des points de comptage</option><option value="89">Prestations de contrôle et d’analyse des échantillons prélevés sur les produits, matériel et matériaux soumis à des normes obligatoires</option><option value="90">Prestations de déménagement</option><option value="91">Prestations de désinsectisation, de dératisation et prestations de lutte contre les animaux errants</option><option value="92">Prestations de mise en place des outils de gestion technique et de détection de fuites</option><option value="93">Prestations de publicité, de sensibilisation et supports multimédia</option><option value="94">Prestations de remise en état et de recharge des extincteurs</option><option value="95">Prestations d’hôtellerie, d’hébergement, de réception et de restauration</option><option value="96">Prestations géotechniques et de laboratoire</option><option value="97">Prestations médicales, hospitalières, radiologiques, d’analyse médicale et de brancardage</option><option value="98">Prestations topographiques et océanographiques</option><option value="99">Traduction simultanée et traduction des documents et des œuvres littéraires, scientifiques, culturelles ou juridiques</option><option value="100">Transport, acconage, magasinage et transit</option><option value="101">Travaux d’aménagement, d’entretien et de réparation des bâtiments administratifs (ONDA)</option><option value="102">Travaux d’aménagement, d’entretien et de réparation des bâtiments techniques (ONDA)</option><option value="103">Travaux d’aménagement, d’entretien et de réparation des bâtiments à caractère social (logements d’estivage, centres sportifs, cantines, buvettes et autres) (ONDA)</option><option value="104">Travaux d’aménagement, d’entretien et de réparation des ouvrages, voies et réseaux (ONDA)</option><option value="105">Travaux d’entretien et de maintenance des réseaux et des espaces verts (ONDA)</option><option value="106">Travaux d’aménagement des espaces verts avec ou sans fourniture de graines et plantes (ONDA)</option><option value="107">Travaux d’installation de matériels divers (ONDA)</option><option value="108">Travaux de dégommage des pistes d’envol (ONDA)</option><option value="109">Travaux d’entretien des infrastructures aéroportuaires, de leurs équipements et de leurs dépendances (ONDA)</option><option value="110">Travaux de signalétique et de signalisation (ONDA)</option><option value="111">Travaux d’assainissement, de raccordement au réseau d’assainissement et de curage (ONDA)</option><option value="112">Travaux d’équipement et de renforcement des postes MT/BT du réseau d’électricité (ONDA)</option><option value="113">Travaux de branchement et d’extension du réseau d’eau potable et d’électricité (ONDA)</option><option value="114">Achat d’articles pour relations publiques (ONDA)</option><option value="115">Acquisition de licences de conception des procédures (ONDA)</option><option value="116">Animaux (ONDA)</option><option value="117">Articles de cuisine (ONDA)</option><option value="118">Articles de literie, de lingerie, de couchage et de buanderie (ONDA)</option><option value="119">Articles d’habillement du personnel (ONDA)</option><option value="120">Articles de plomberie sanitaire (ONDA)</option><option value="121">Batteries (ONDA)</option><option value="122">Carburants et lubrifiants (ONDA)</option><option value="123">Cartes géographiques, topographiques et géologiques, photographies aériennes (ONDA)</option><option value="124">Fournitures et produits de nettoyage (ONDA)</option><option value="125">Documentation (ONDA)</option><option value="126">Equipements de protection individuelle (EPI) (ONDA)</option><option value="127">Fourniture d’engrais, de graines, plantes, fleurs, plants, portoirs (ONDA)</option><option value="128">Fourniture d’équipements médicotechniques (ONDA)</option><option value="129">Fourniture de badge, articles similaires et accessoires (ONDA)</option><option value="130">Fourniture pour matériel informatique et bureautique (ONDA)</option><option value="131">Fournitures de bureau et imprimés (ONDA)</option><option value="132">Fournitures de clôtures grillagées et barbelés pour sécurité des sites (ONDA)</option><option value="133">Fournitures de composants électriques (chargeurs, onduleurs, régulateurs, batteries) destinés aux installations de la navigation aérienne (ONDA)</option><option value="134">Fournitures de sacs et produits d’emballage (ONDA)</option><option value="135">Fournitures du matériel pour le système de téléaffichage et le système de traitement de passagers (ONDA)</option><option value="136">Fournitures électriques (ONDA)</option><option value="137">Fournitures pour matériel technique et informatique (ONDA)</option><option value="138">Achat de cartables, de livres, de manuels, et de fournitures scolaires et de matériel d’enseignement (ONDA)</option><option value="139">Matériaux de construction (ONDA)</option><option value="140">Matériel de sonorisation de téléphonie et de télécommunication (ONDA)</option><option value="141">Matériel de transport (ONDA)</option><option value="142">Matériel et articles de sport (ONDA)</option><option value="143">Matériel informatique et pièces de rechange (ONDA)</option><option value="144">Matériel médical pour unité médicale d’urgence (ONDA)</option><option value="145">Matériel technique et d’assainissement (ONDA)</option><option value="146">Matériels de lutte contre l’incendie (ONDA)</option><option value="147">Badges, médailles, effigies, drapeaux, fanions et portraits (ONDA)</option><option value="148">Médicaments (ONDA)</option><option value="149">Mobilier d’aérogare (ONDA)</option><option value="150">Mobilier de bureau (ONDA)</option><option value="151">Matériel de bureau (ONDA)</option><option value="152">Autres mobiliers (ONDA)</option><option value="153">Autres matériels (ONDA)</option><option value="154">Droguerie, outillage et quincaillerie (ONDA)</option><option value="155">Fourniture de peinture et ses produits accessoires (ONDA)</option><option value="156">Pièces de rechange et fournitures électriques pour l’éclairage des grandes surfaces et aérogares (ONDA)</option><option value="157">Pièces de rechange et fournitures pour climatisation et matériel de climatisation (ONDA)</option><option value="158">Pièces de rechange et fournitures pour installations communication, navigation et surveillances (ONDA)</option><option value="159">Pièces de rechange et fournitures pour installations de navigation aérienne (ONDA)</option><option value="160">Pièces de rechange et fournitures pour matériel et de balisage (ONDA)</option><option value="161">Pièces de rechange pour les équipements médicotechniques (ONDA)</option><option value="162">Pièces de rechange pour matériel technique (ONDA)</option><option value="163">Pièces de rechange, fournitures et pneumatiques pour véhicules et engins (ONDA)</option><option value="164">Produits alimentaires pour usage humain et animal (ONDA)</option><option value="165">Produits chimiques et de laboratoire, pesticides et insecticides (ONDA)</option><option value="166">Produits d’impression, de reproduction et de photographie (ONDA)</option><option value="167">Fourniture de combustibles et de produits de chauffage (ONDA)</option><option value="168">Produits de lutte contre l’incendie (ONDA)</option><option value="169">Produits pharmaceutiques non médicamenteux, articles de correction de vue et articles pour handicapés (ONDA)</option><option value="170">Systèmes vidéo surveillance (ONDA)</option><option value="171">Mobilier d’exposition (ONDA)</option><option value="172">Signalétique et signalisation (ONDA)</option><option value="173">Articles d’électroménager (ONDA)</option><option value="174">Fourniture pour ateliers mécaniques, de menuiserie et de tôlerie (ONDA)</option><option value="175">Gaz et Oxygène (ONDA)</option><option value="176">Mobiliers pour bâtiments à caractère social (ONDA)</option><option value="177">Matériels et équipements pour bâtiments à caractère social (ONDA)</option><option value="178">Achat de logiciels (ONDA)</option><option value="179">Articles d’habillement des élèves de l’AIAC (ONDA)</option><option value="180">Articles d’habillement pour actions sociales (ONDA)</option><option value="181">Matériel et article de sport pour les élèves de l’AIAC (ONDA)</option><option value="182">Literies pour les élèves de l’AIAC (ONDA)</option><option value="183">Matériel de manutention, citernes et engins (ONDA)</option><option value="184">Matériel et installations logistiques (ONDA)</option><option value="185">Achat d’affiches et d’articles publicitaires (ONDA)</option><option value="186">Matériel audiovisuel, sonore et de mise en lumière (ONDA)</option><option value="187">Matériel électrique, de groupes électrogènes, d’électropompes et de motopompes (ONDA)</option><option value="188">Matériel, de câbles, coffrets de distribution, de poteaux et autres accessoires de branchements moyenne tension et basse tension (ONDA)</option><option value="189">Animation colonie de vacances (ONDA)</option><option value="190">Capture des animaux (ONDA)</option><option value="191">Contrôle réglementaire et veille légale et réglementaire (ONDA)</option><option value="192">Dégraissage et nettoyage (ONDA)</option><option value="193">Elaboration du plan de dégagement de servitude radioélectrique pour installations communication, navigation et surveillances (ONDA)</option><option value="194">Entretien et réparation de matériel et de mobilier (ONDA)</option><option value="195">Entretien et réparation des équipements et installation technique (ONDA)</option><option value="196">Entretien et réparation des groupes électrogène et onduleurs (ONDA)</option><option value="197">Entretien et réparation des véhicules et engins (ONDA)</option><option value="198">Etalonnage et calibrage des appareils de mesure (ONDA)</option><option value="199">Etudes et conseil (ONDA)</option><option value="200">Location d’engins et de moyens de transport de matériels et matériaux et d’engins (ONDA)</option><option value="201">Location de camion citernes (ONDA)</option><option value="202">Location de matériel et de mobilier (ONDA)</option><option value="203">Location de moyens de transport des personnes (voitures et cars) (ONDA)</option><option value="204">Location de tentes, chapiteaux et toilettes mobiles (ONDA)</option><option value="205">Montage et démontage du matériel hydraulique et électromécanique (ONDA)</option><option value="206">Organisation de manifestations culturelles, scientifiques et sportives (ONDA)</option><option value="207">Prestation de formation et coaching (ONDA)</option><option value="208">Prestation de montage, démontage et pointage antenne (VHF, FH et VSAT) (ONDA)</option><option value="209">Prestation de réfection et peinture des pylônes des antennes avancées (ONDA)</option><option value="210">Prestation médicale, hospitalières et de brancardage (ONDA)</option><option value="211">Prestations d’assistance et de conseil (ONDA)</option><option value="212">Prestations d’assistance au recrutement (ONDA)</option><option value="213">Prestations d’enquête cadastrale et parcellaire (ONDA)</option><option value="214">Prestations d’impression, de reproduction, de photographie et de tournage (ONDA)</option><option value="215">Prestations de jardinage des aérogares et bâtiments (ONDA)</option><option value="216">Prestations de nettoyage (ONDA)</option><option value="217">Prestations de collecte de déchets (ONDA)</option><option value="218">Prestations d’intérim (ONDA)</option><option value="219">Prestations de mesure, d’analyse et de contrôle (mesure de la qualité d’air, rejets liquides, contrôle qualité de l’eau, mesure du niveau du bruit) et prestations traitement des déchets (ONDA)</option><option value="220">Prestations de publicité (ONDA)</option><option value="221">Prestations topographiques (ONDA)</option><option value="222">Réparation et maintenance des équipements techniques, informatiques, logiciels et progiciels (ONDA)</option><option value="223">Traduction des documents et correspondances (ONDA)</option><option value="224">Transport, acconage, magasinage et transit (ONDA)</option><option value="225">Visite technique des véhicules et engins (ONDA)</option><option value="226">Prestations de gardiennage et de surveillance (ONDA)</option><option value="227">Gestion multiservices des bâtiments (ONDA)</option><option value="228">Audits (ONDA)</option><option value="229">Prestations d’accréditation et de certification (ONDA)</option><option value="230">Prestations de centres d’appels (ONDA)</option><option value="231">Veille et gestion de la marque ONDA sur les réseaux sociaux (ONDA)</option><option value="232">Prestations liées à l’obtention d’un certificat et signature électronique (ONDA)</option><option value="233">Assistance administrative, technique et logistique pour la réforme des immobilisations (ONDA)</option><option value="234">Prestations de remise en état et de recharge des extincteurs (ONDA)</option><option value="235">Travaux d’aménagement des espaces verts avec ou sans fourniture de graines et plantes (ANCFCC)</option><option value="236">Travaux d’aménagement, d’entretien et de réparation des bâtiments administratifs (ANCFCC)</option><option value="237">Travaux d’aménagement, d’entretien et de réparation des ouvrages, voies et réseaux (ANCFCC)</option><option value="238">Travaux d’équipement et de renforcement des postes MT/BT du réseau d’électricité (ANCFCC)</option><option value="239">Travaux d’installation de matériels divers (ANCFCC)</option><option value="240">Travaux de branchement et d’extension du réseau d’eau potable et d’électricité (ANCFCC)</option><option value="241">Travaux de raccordement au réseau d’assainissement et de curage (ANCFCC)</option><option value="242">Travaux d’aménagement, d’entretien et de réparation des bâtiments administratifs et techniques (ANCFCC)</option><option value="243">Achat d’affiches et d’articles publicitaires (ANCFCC)</option><option value="244">Achat d’animaux (ANCFCC)</option><option value="245">Achat d’articles de correction de la vue et articles pour personnes à besoins spécifiques (ANCFCC)</option><option value="246">Achat d’articles de droguerie, de quincaillerie, d’électricité, de menuiserie et de plomberie sanitaire (ANCFCC)</option><option value="247">Achat d’habillement (ANCFCC)</option><option value="248">Achat de badges, de médailles, d’effigies, de fanions, de drapeaux et de portraits (ANCFCC)</option><option value="249">Achat de carburants et de lubrifiants (ANCFCC)</option><option value="250">Achat de cartables, de livres, de manuels, et de fournitures scolaires et de matériel d’enseignement (ANCFCC)</option><option value="251">Achat de cartes géographiques, topographiques, géologiques et de photographies aériennes (ANCFCC)</option><option value="252">Achat de fournitures de bureau et de documentation (ANCFCC)</option><option value="253">Achat de matériaux de construction (ANCFCC)</option><option value="254">Achat de matériel audiovisuel, sonore et de mise en lumière (ANCFCC)</option><option value="255">Achat de matériel d’éclairage public (ANCFCC)</option><option value="256">Achat de matériel de diagnostic, de recherche, de détection, de signalisation de défaut et de matériel de mesure (ANCFCC)</option><option value="257">Achat de matériel de navigation et de transmission (ANCFCC)</option><option value="258">Achat de matériel de sécurité et produits de lutte contre l’incendie (ANCFCC)</option><option value="259">Achat de matériel électrique, de groupes électrogènes, d’électropompes et de motopompes de chantier (ANCFCC)</option><option value="260">Achat de matériel et de mobilier de bureau (ANCFCC)</option><option value="261">Achat de matériel technique, de logiciels et de matériel informatique (ANCFCC)</option><option value="262">Achat de matériel, de câbles, coffrets de distribution, de poteaux et autres accessoires de branchements moyenne tension et basse tension (ANCFCC)</option><option value="263">Achat de matériels et articles de sport, de literie, de linge, de couchage, de cuisine et de buanderie (ANCFCC)</option><option value="264">Achat de matières premières pour laboratoire et enseignement (ANCFCC)</option><option value="265">Achat de matières premières pour le textile, le cuir, la reliure des documents et autres (ANCFCC)</option><option value="266">Achat de médicaments (ANCFCC)</option><option value="267">Achat de mobilier, d’enseignement, de laboratoire et d’exposition (ANCFCC)</option><option value="268">Achat de papeteries et d’imprimés (ANCFCC)</option><option value="269">Achat de pièces de rechange et pneumatiques pour véhicules et engins (ANCFCC)</option><option value="270">Achat de pièces de rechange pour les équipements médicotechniques (ANCFCC)</option><option value="271">Achat de pièces de rechange pour matériel technique et informatique (ANCFCC)</option><option value="272">Achat de produits alimentaires pour usage animal (ANCFCC)</option><option value="273">Achat de produits alimentaires pour usage humain (ANCFCC)</option><option value="274">Achat de produits chimiques et de laboratoire, pesticides et insecticides (ANCFCC)</option><option value="275">Achat de produits d’impression, de reproduction et de photographie (ANCFCC)</option><option value="276">Achat de produits pharmaceutiques non-médicamenteux, de gaz médicaux et de réactifs de laboratoires (ANCFCC)</option><option value="277">Achat de produits pour traitement d’eau potable (ANCFCC)</option><option value="278">Cartes géographiques, topographiques et géologiques, photographies aériennes et images satellitaires (ANCFCC)</option><option value="279">Détergents et produits de nettoyage (ANCFCC)</option><option value="280">Fourniture d’engrais, de graines, de plantes, de plants et de portoirs (ANCFCC)</option><option value="281">Fourniture d’équipements médicotechniques et de pièces de rechange y afférentes (ANCFCC)</option><option value="282">Fourniture de combustibles et de produits de chauffage (ANCFCC)</option><option value="283">Fourniture de films et de produits radiologiques (ANCFCC)</option><option value="284">Fourniture de sacs et produits d’emballage (ANCFCC)</option><option value="285">Fourniture de verrerie, petit matériel et outillage de laboratoire (ANCFCC)</option><option value="286">Fournitures et pièces de rechange pour matériel technique et informatique (ANCFCC)</option><option value="287">Fournitures et produits d’entretien et de nettoyage (ANCFCC)</option><option value="288">Fournitures pour inauguration et pose de premières pierres (ANCFCC)</option><option value="289">Fournitures pour le traitement et la conservation préventive des archives (ANCFCC)</option><option value="290">Fournitures de reliure, de reprographie, de reproduction, de photomécanique (ANCFCC)</option><option value="291">Fournitures électriques (ANCFCC)</option><option value="292">Fournitures pour matériel informatique et technique (ANCFCC)</option><option value="293">Fourniture de pièces de rechange pour matériel d’imprimerie (ANCFCC)</option><option value="294">Fourniture de pièces de rechange pour matériel cartographique (ANCFCC)</option><option value="295">Fourniture de pièces de rechange pour matériel géodésique (ANCFCC)</option><option value="296">Habillement (ANCFCC)</option><option value="297">Manuels et fournitures scolaires et d’enseignement (ANCFCC)</option><option value="298">Matériel d’imprimerie (ANCFCC)</option><option value="299">Matériel géodésique et accessoires (ANCFCC)</option><option value="300">Matériel cartographique et accessoires (ANCFCC)</option><option value="301">Outillage et quincaillerie (ANCFCC)</option><option value="302">Abonnement aux prestations liées aux avions (ANCFCC)</option><option value="303">Actions de communication et relations publiques (ANCFCC)</option><option value="304">Achat de piges (ANCFCC)</option><option value="305">Contrôle et expertise techniques (ANCFCC)</option><option value="306">Direction, animation et participation des artistes, intellectuels, conférenciers et techniciens aux manifestations et activités culturelles (ANCFCC)</option><option value="307">Entretien et maintenance des équipements cartographiques, système de flashage et équipements géodésiques (ANCFCC)</option><option value="308">Entretien et maintenance de logiciels et de progiciels (ANCFCC)</option><option value="309">Entretien et maintenance des équipements informatiques (ANCFCC)</option><option value="310">Entretien et réparation de matériel technique, de mobilier et des installations techniques (ANCFCC)</option><option value="311">Entretien, dépoussiérage et traitement chimique des archives et des livres (ANCFCC)</option><option value="312">Etudes, conseil et formation (ANCFCC)</option><option value="313">Location d’engins et de moyens de transport de matériels et matériaux et d’engins (ANCFCC)</option><option value="314">Location de camions citernes (ANCFCC)</option><option value="315">Location de matériel et de mobilier (ANCFCC)</option><option value="316">Location de moyens de transport des personnes (voitures et autocars) (ANCFCC)</option><option value="317">Montage et démontage du matériel hydraulique et électromécanique (ANCFCC)</option><option value="318">Organisation de manifestations culturelles, scientifiques et sportives (ANCFCC)</option><option value="319">Prestation de jardinage, de gardiennage, de nettoyage et d’intérim (ANCFCC)</option><option value="320">Prestations d’assistance et de conseil technique, juridique et comptable (ANCFCC)</option><option value="321">Prestations d’entretien des véhicules et engins (ANCFCC)</option><option value="322">Prestations d’impression, de tirage, de reproduction et de photographie (ANCFCC)</option><option value="323">Prestations de centres d’appels, de télémarketing et de télé-service (ANCFCC)</option><option value="324">Prestations de contrôle et d’analyse des échantillons prélevés sur les produits, matériel et matériaux soumis à des normes obligatoires (ANCFCC)</option><option value="325">Prestations de déménagement (ANCFCC)</option><option value="326">Prestations de désinsectisation, de dératisation et prestations de lutte contre les animaux errants (ANCFCC)</option><option value="327">Prestations de mise en place des outils de gestion technique et de détection de fuites (ANCFCC)</option><option value="328">Prestations de publicité, de sensibilisation et supports multimédia (ANCFCC)</option><option value="329">Prestations de remise en état et de recharge des extincteurs (ANCFCC)</option><option value="330">Prestations géotechniques et de laboratoire (ANCFCC)</option><option value="331">Prestations médicales, hospitalières, radiologiques, d’analyse médicale et de brancardage (ANCFCC)</option><option value="332">Prestations topographiques et océanographiques (ANCFCC)</option><option value="333">Transport, acconage, magasinage et transit. (ANCFCC)</option><option value="334">Prestations d’installation et de mise en service des liens wan (ANCFCC)</option><option value="335">Prestations d’audit et de contrôle de gestion (ANCFCC)</option><option value="336">Prestations cartographiques et photogrammétriques (ANCFCC)</option><option value="337">Prestations géodésiques (ANCFCC)</option><option value="338">Prestations topographiques (ANCFCC)</option><option value="339">Prestations de flashage et d’impression cartographique (ANCFCC)</option></select>
+          </div>
+        </div>
+        <div class="row my-2">
+          <div class="col" id="acheteur-select">
+            <label class="" for="search_consultation_entreprise_acheteur">Acheteur</label>
+            <div class="position-relative">
+              <input type="text" id="search_consultation_entreprise_acheteur" name="search_consultation_entreprise[acheteur]" placeholder="Acheteur" class="form-control" autocomplete="off">
+              <div class="dateTime__icons" style="z-index: 1;">
+                <i class="fa-solid fa-xmark resetacheteur"></i>
+              </div>
+            </div>
+            <div class="d-none" id="autocomplete-dropdown"></div>
+            <input type="text" id="search_consultation_entreprise_service" name="search_consultation_entreprise[service]" placeholder="Service" class="form-control d-none">
+          </div>
+          <div class="col">
+            <label class="" for="search_consultation_entreprise_lieuExecution">Lieu d'exécution</label>
+            <input type="text" id="search_consultation_entreprise_lieuExecution" name="search_consultation_entreprise[lieuExecution]" placeholder="Lieu d'exécution" class="form-control">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center my-3 block__filter">
+          <button type="button" class="btn bg-white text-danger border-danger" onclick="resetFormInputs()">
+            <i class="fa fa-multiply"></i>
+            Effacer tous les filtres
+          </button>
+          <button type="submit" class="btn content__button sendform">
+            Lancer la recherche
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      <div class="content__table d-flex justify-content-between mt-3">
+        <div>
+          <select id="search_consultation_entreprise_pageSize" name="search_consultation_entreprise[pageSize]" class="form-select page-size"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50" selected="selected">50</option></select>
+        </div>
+        <div class="content__resultat">Nombre de résultats : 413</div>
+      </div>
+      </form>
+                                            <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side bdc-card__side--ko">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">29 nov. 2026</span>
+              <span class="bdc-card__s">à 10:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">05/INV/2026</span>
+                <span class="badge bg-danger">Annulé</span>              </div>
+              <a href="/bdc/entreprise/consultation/show/398429" class="bdc-card__title">Etudes topographiques des établissements scolaires relevant de la direction provinciale de Tanger – Assilah.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>DIRECTION PROVINCIALE DE L’EDUCATION NATIONALE DE TANGER ASSILA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="MAROC, TANGER-ASSILAH"><i class="fa-solid fa-location-dot"></i>MAROC, TANGER-ASSILAH</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">09 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">0022-2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/397695" class="bdc-card__title">Organisation des sessions de formations pour le compte du personnel de la direction régionale de l’ONSSA de Dakhla Oued Eddahab</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>OFFICE NATIONAL DE SECURITE SANITAIRE DES PRODUITS ALIMENTAIRES - DIRECTION REGIONALE DE LA REGION DAKHLA OUED EDDAHAB</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="OUED ED DAHAB, DAKHLA"><i class="fa-solid fa-location-dot"></i>OUED ED DAHAB, DAKHLA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">09 nov. 2026</span>
+              <span class="bdc-card__s">à 10:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">27/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400182" class="bdc-card__title">Entretien Courant de matériel et Mobilier de Bureau</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune urbaine de BOULEMANE</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="BOULEMANE"><i class="fa-solid fa-location-dot"></i>BOULEMANE</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">09 nov. 2026</span>
+              <span class="bdc-card__s">à 09:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">20/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/399067" class="bdc-card__title">Entretiens et  Réparation  du moteur, interrupteur, câble, éclairage et de rideau en aluminium motorisé 
+************************************************************************************************
+Les soumissionnaires sont tenus de déposer, au siège de l’Agence Urbaine de Taza-Taounate (Avenue Hassan Bahtat, Gare, Taza), les prospectus relatifs à article 3,7 et 8 au plus tard le jour ouvrable précédant la date limite de réception des devis, ou de les remettre en main propre à la présidente de la commission d’ouverture des plis lors de la séance correspondante.
+Le pli contenant les prospectus doit être fermé et porter de manière apparente la mention « Prospectus». Les prospectus doivent détailler l’ensemble des caractéristiques techniques des articles, accompagnés d’images, toute offre ne disposant pas les prospectus est jugée non conforme et entraîne l’écartement du soumissionnaire ;
+**********************************************************************************************
+************************************************************************************************
+Une estimation du coût des prestations est arrêtée à la somme de : 39.168,00 dirhams (Trente-neuf mille cent soixante mille dirhams   ).
+Le maître d’ouvrage procédera notamment à la vérification des montants proposés par rapport à l’estimation précitée et pourra écarter toute offre jugée excessive ou anormalement basse, dans les conditions prévues par la réglementation en vigueur.
+L’offre est jugée excessive lorsqu’elle est supérieure de plus de vingt pour cent (20%) par rapport à l’estimation du cout des prestations établie par le maitre d’ouvrage et elle est jugée anormalement basse lorsqu’elle est inférieure de plus de vingt-cinq pour cent (25%) par rapport à l’estimation du cout des prestations établie par le maitre d’ouvrage.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>AGENCE URBAINE DE TAZA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="TAZA"><i class="fa-solid fa-location-dot"></i>TAZA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">06 nov. 2026</span>
+              <span class="bdc-card__s">à 14:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">ACH26-0030</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401199" class="bdc-card__title">Demande de devis pour le remplissage d’extincteurs périmés.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>SOCIETE CASABLANCA BAÏA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="CASABLANCA"><i class="fa-solid fa-location-dot"></i>CASABLANCA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">06 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">38/2026/EACCE</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400934" class="bdc-card__title">Réparation et remise en marche d’un Réfrigérateur de marque Liebherr, y compris toutes sujétions.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>ETABLISSEMENT AUTONOME DE CONTROLE ET DE COORDINATION DES EXPORTATIONS</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="CASABLANCA"><i class="fa-solid fa-location-dot"></i>CASABLANCA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">06 nov. 2026</span>
+              <span class="bdc-card__s">à 10:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">60/2026/CCISFM</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401740" class="bdc-card__title">Formation en Anglais général et professionnel au profit des cadres et responsables de la CCIS de Fès Meknès</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>CHAMBRE DE COMMERCE D'INDUSTRIE ET DE SERVICES DE LA REGION DE FES - MEKNES</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="FES, MEKNES, TAZA"><i class="fa-solid fa-location-dot"></i>FES, MEKNES, TAZA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 13:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">16/10/FNC/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401170" class="bdc-card__title">Mise à disposition des camions pour le transport du matériel et du mobilier de bureau de la Présidence de l’Université Ibn Zohr vers Biougra, Tiznit et Guelmim.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>PRESIDENCE DE L'UNIVERSITE IBN ZOHR AGADIR</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="AGADIR IDA OU TANANE, CHTOUKA-AIT BAHA, TIZNIT, GUELMIM"><i class="fa-solid fa-location-dot"></i>AGADIR IDA OU TANANE, CHTOUKA-AIT BAHA, TIZNIT, GUELMIM</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 13:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">17/10/FNC/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401190" class="bdc-card__title">Nettoyage, grand ménage et hygiène des bâtiments administratifs des établissements relevant de l’Université Ibn Zohr, notamment l’Institut des Métiers du Sport, l’École Nationale des Sciences et de la Biotechnologie de Biougra, la Faculté d’Économie et de Gestion de Tiznit et la Faculté des Sciences Juridiques et Politiques de Tiznit.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>PRESIDENCE DE L'UNIVERSITE IBN ZOHR AGADIR</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="AGADIR IDA OU TANANE, CHTOUKA-AIT BAHA, TIZNIT"><i class="fa-solid fa-location-dot"></i>AGADIR IDA OU TANANE, CHTOUKA-AIT BAHA, TIZNIT</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">10/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400418" class="bdc-card__title">Etablissement de l’état des lieux et propositions d’aménagement des bâtiments administratifs relevant de la Direction Régionale de l’Agriculture de Casablanca-Settat</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>DIRECTION REGIONALE D'AGRICULTURE DE LA REGION CASABLANCA-SETTAT</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="CASABLANCA, EL JADIDA"><i class="fa-solid fa-location-dot"></i>CASABLANCA, EL JADIDA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">03/CON/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400633" class="bdc-card__title">ETUDES TECHNIQUES DES TRAVAUX D’ENTRETIEN ET DE MAINTENANCE DES PISTES EXISTANTES SUIVANTES :
+1- PISTE RELIANT OULED IKOU ET OULED ZAIRASUR UNE LONGUEUR 4500 ML
+2- PISTE RELIANT DOUAR CHMAMTA ET DOUAR LAAKAOUKA SUR UNE LONGUEUR 3500 ML
+3- PISTE RELIANT DOUAR LAAKAOUKA ET LA RP N°3625 SUR UNE LONGUEUR 3000 ML
+4- PISTE RELIANT DOUAR OULED OMER DHADHA ET LA RP N°3625 SUR UNE LONGUEUR 3000 ML
+5- PISTE RELIANT LA RR N°316  ET OULED ALI BELHAJ SUR UNE LONGUEUR 2000 ML
+6- PISTE RELIANT CIMETIERE SIDI ABDELLAH  ET LA PISTE DE CHMAMTA SUR UNE LONGUEUR 2000 ML
+7- PISTE RELIANT LAHRAKTA LAGAIDA ET FEDDAN ELBESSBASSA SUR UNE LONGUEUR 2500 ML
+8- PISTE RELIANT SNAD  ET LAHRAKTA OIRDIGHA SUR UNE LONGUEUR 1500 ML
+9- PISTE RELIANT LA RR N°316  ET OULED YAHYA SUR UNE LONGUEUR 1500 ML
+10- PISTE RELIANT ECOLE JOARANE ET ECOLE LAHRAKTA  SUR UNE LONGUEUR 4000 ML
+11-PISTE RELIANT LA RN N°23  ET LAAGAGBA  SUR UNE LONGUEUR 2500 ML</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune OUED NAANAA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="SETTAT"><i class="fa-solid fa-location-dot"></i>SETTAT</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">38/CCH/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401222" class="bdc-card__title">Étude technique d’aménagement des pistes et voies internes de douar Ouled Bouraiss à la Commune de Chbanate, Province de Sidi Kacem.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>COMMUNE CHBANATE</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="SIDI KACEM"><i class="fa-solid fa-location-dot"></i>SIDI KACEM</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">118/ENSEM/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401582" class="bdc-card__title">Publication des articles scientifiques dans une revue scientifique "Environmental and Earth Sciences Proceedings "dans le cadre du colloque W3CE26 .</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>ECOLE NATIONALE SUPERIEURE D'ELECTRICITE ET MECANIQUE - CASABLANCA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="CASABLANCA"><i class="fa-solid fa-location-dot"></i>CASABLANCA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">05/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401732" class="bdc-card__title">Frais d’étude technique des projets : pour  Réalisation de levés  topographiques concernant seize (16) parcelles immobilières relevant de la Commune d’Er-Rafiaya, d’une superficie totale indicative d’environ 15 415 m².</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune ERRAFIAYA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="EL KELAA DES SRAGHNA"><i class="fa-solid fa-location-dot"></i>EL KELAA DES SRAGHNA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">22/INV/DRCAFM/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401746" class="bdc-card__title">La prise en charge des frais d’hébergement et de restauration des participants au voyage d’étude au profit des agriculteurs et techniciens de la région de Fès-Meknès</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>OFFICE NATIONAL DU CONSEIL AGRICOLE DIRECTION REGIONALE FES MEKNES</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="FES, MEKNES, EL-HAJEB, IFRANE, MOULAY-YACOUB, SEFROU, BOULEMANE, TAOUNATE, TAZA, MARRAKECH, CHICHAOUA, AL HAOUZ, EL KELAA DES SRAGHNA, ESSAOUIRA, REHAMNA, SAFI, YOUSSOUFIA"><i class="fa-solid fa-location-dot"></i>FES, MEKNES, EL-HAJEB, IFRANE, MOULAY-YACOUB, SEFROU, BOULEMANE, TAOUNATE, TAZA, MARRAKECH, CHICHAOUA, AL HAOUZ, EL KELAA DES SRAGHNA, ESSAOUIRA, REHAMNA, SAFI, YOUSSOUFIA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">05/2026/CFPTC</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400431" class="bdc-card__title">Acquisition des pièces de rechange destinée aux travaux d’entretien et de réparation des équipements pédagogiques de l’ISTA Textile et Confection Tanger.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>OFPPT/ DIRECTION REGIONALE TANGER - TETOUAN - AL HOCEIMA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="TANGER-ASSILAH"><i class="fa-solid fa-location-dot"></i>TANGER-ASSILAH</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">11/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400496" class="bdc-card__title">Entretien et Réparation véhicules et engins aux profils de la commune territoriale d’amellagou province de Er-Rachidia.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune rurale de AMELLAGOU</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="ERRACHIDIA"><i class="fa-solid fa-location-dot"></i>ERRACHIDIA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">24/FOSCEF/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401534" class="bdc-card__title">Études techniques et suivi des travaux de réhabilitation et de mise à niveau des infrastructures existantes du Club Le Forestier de Salé.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>FONDATION DE PROMOTION DES OEUVRES SOCIALES ET CULTURELLES  AU PROFIT DES FONCTIONNAIRES DU DEPARTEMENT DES EAUX ET FORETS</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="SALE"><i class="fa-solid fa-location-dot"></i>SALE</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">21/INV/DRCAFM/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401729" class="bdc-card__title">La réalisation de l’assistance technique, l’encadrement et l’accompagnement par le conseil agricole privé des agriculteurs, agricultrices et organisations professionnelles au niveau de la région de Fès Meknès</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>OFFICE NATIONAL DU CONSEIL AGRICOLE DIRECTION REGIONALE FES MEKNES</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="FES, MEKNES, EL-HAJEB, IFRANE, MOULAY-YACOUB, SEFROU, BOULEMANE, TAOUNATE, TAZA"><i class="fa-solid fa-location-dot"></i>FES, MEKNES, EL-HAJEB, IFRANE, MOULAY-YACOUB, SEFROU, BOULEMANE, TAOUNATE, TAZA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 10:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">DP-058/OJD/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/398658" class="bdc-card__title">LEVÉS TOPOGRAPHIQUES, RESTITUTION ET ANALYSE DES DONNÉES D’OBSTACLES DE L’AÉROPORT OUJDA-ANGADS</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>ONDA - AEROPORT OUJDA ANGADS</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="OUJDA-ANGAD"><i class="fa-solid fa-location-dot"></i>OUJDA-ANGAD</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 10:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">21/2026/AUKH</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/399441" class="bdc-card__title">Formation en langue anglaise et espagnole au profit du personnel de l’Agence Urbaine de Khémisset.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>AGENCE URBAINE DE KHEMISSET</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="KHEMISSET"><i class="fa-solid fa-location-dot"></i>KHEMISSET</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 10:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">58/2026/CRRAR</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/399861" class="bdc-card__title">Conduite d’une enquête exploitation agricole sur les perceptions des risques agricoles et de l'adaptation chez les agriculteurs pour le Centre Régional de la Recherche Agronomique de Rabat</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>INSTITUT NATIONAL DE LA RECHERCHE AGRONOMIQUE/ CENTRE REGIONAL DE LA RECHERCHE AGRONOMIQUE DE RABAT</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="RABAT, SKHIRATE-TEMARA"><i class="fa-solid fa-location-dot"></i>RABAT, SKHIRATE-TEMARA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 09:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">09/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/398241" class="bdc-card__title">La restauration aux profils de la commune territoriale d’amellagou province de Er-Rachidia.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune rurale de AMELLAGOU</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="ERRACHIDIA"><i class="fa-solid fa-location-dot"></i>ERRACHIDIA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 09:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">49/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401339" class="bdc-card__title">Étude géotechnique nécessaire à l’étude d'élargissement et de renforcement de la RP 3113 du PK 12+600 au PK 29+000 (Province de Béni Mellal)</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>LE DIRECTEUR PROVINCIAL DE L'EQUIPEMENT, DU TRANSPORT ET DE LA LOGISTIQUE DE BENIMELLAL</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="BENI MELLAL"><i class="fa-solid fa-location-dot"></i>BENI MELLAL</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 09:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">50/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401359" class="bdc-card__title">Étude géotechnique nécessaire à l’étude de mise à niveau de la RN 12 du PK 187+000 au PK 269+100 et de mise à niveau de la RP 3214 du PK 0+000 au PK 28+160 (Province de Béni Mellal)</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>LE DIRECTEUR PROVINCIAL DE L'EQUIPEMENT, DU TRANSPORT ET DE LA LOGISTIQUE DE BENIMELLAL</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="BENI MELLAL"><i class="fa-solid fa-location-dot"></i>BENI MELLAL</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">05 nov. 2026</span>
+              <span class="bdc-card__s">à 09:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">51/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401366" class="bdc-card__title">Étude d’élargissement et de renforcement de la RP 3113 du PK 12+600 au PK 29+000 (Province de Béni Mellal)</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>LE DIRECTEUR PROVINCIAL DE L'EQUIPEMENT, DU TRANSPORT ET DE LA LOGISTIQUE DE BENIMELLAL</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="BENI MELLAL"><i class="fa-solid fa-location-dot"></i>BENI MELLAL</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 16:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">03/AUDOE/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400712" class="bdc-card__title">Réparation et fourniture et pose des pièces de rechange du matériel informatique pour le compte de l’Agence Urbaine de Dakhla Oued Eddahab</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>AGENCE URBAINE DE DAKHLA - OUED ED-DAHAB</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="MAROC, DAKHLA"><i class="fa-solid fa-location-dot"></i>MAROC, DAKHLA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 16:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">AvisN68/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400580" class="bdc-card__title">Étude technique et suivi des travaux de construction du mur de clôture de l’ENCGO, pour le compte de la présidence de l'Université Mohammed Premier -Oujda.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>PRESIDENCE DE L'UNIVERSITE MOHAMMED I</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="OUJDA-ANGAD"><i class="fa-solid fa-location-dot"></i>OUJDA-ANGAD</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 15:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">21/RAS/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401605" class="bdc-card__title">ETUDE DES TRAVAUX DE REHABILITATION DU SIEGE DE LA COMMUNE SISE A QUARTIER ADMINISTRATIF CENTRE RAS EL AIN CHAOUIA.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune de RAS EL AIN CHAOUIA </span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="MAROC, SETTAT"><i class="fa-solid fa-location-dot"></i>MAROC, SETTAT</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side bdc-card__side--ko">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 14:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">26/2026</span>
+                <span class="badge bg-danger">Annulé</span>              </div>
+              <a href="/bdc/entreprise/consultation/show/398124" class="bdc-card__title">ETUDE D’ETABLISSEMENT D’OUVRAGES DOCUMENTAIRE RETRACANT LE BILAN DU  
+MONDAT DU CONSEIL COMMUNAL INCHADEN AU TITRE DE LA PERIODE 2022–2027.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune de INCHADEN</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="CHTOUKA-AIT BAHA"><i class="fa-solid fa-location-dot"></i>CHTOUKA-AIT BAHA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 14:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">026/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/398226" class="bdc-card__title">ETUDE D’ETABLISSEMENT D’OUVRAGES DOCUMENTAIRE RETRACANT LE BILAN DU  
+MONDAT DU CONSEIL COMMUNAL INCHADEN AU TITRE DE LA PERIODE 2022–2027.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune de INCHADEN</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="CHTOUKA-AIT BAHA"><i class="fa-solid fa-location-dot"></i>CHTOUKA-AIT BAHA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 14:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">61/2026/SAD/GSTTTA</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400839" class="bdc-card__title">Réparation de 05 onduleurs du bloc opératoire des urgences de l'Hôpital Universitaire General Mohammed VI - Tanger</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>GROUPEMENT SANITAIRE TERRITORIAL TANGER - TETOUAN - AL HOCEIMA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="TANGER-ASSILAH"><i class="fa-solid fa-location-dot"></i>TANGER-ASSILAH</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 14:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">20/RAS/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401597" class="bdc-card__title">ETUDE DES TRAVAUX DE REHABILITATION D’UN JARDIN (AIN RAS EL AIN) SISE A AIN RAS EL AIN COMMUNE RAS EL AIN CHAOUIA.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune de RAS EL AIN CHAOUIA </span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="MAROC, SETTAT"><i class="fa-solid fa-location-dot"></i>MAROC, SETTAT</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">012/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401343" class="bdc-card__title">Etude de construction de centre sosio-economique et sportif au centre bni salah</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune rurale de BNI SALAH</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="MAROC, CHEFCHAOUEN"><i class="fa-solid fa-location-dot"></i>MAROC, CHEFCHAOUEN</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">212/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400199" class="bdc-card__title">La réalisation des études géotechnique nécessaires à la reconnaissance de sol et détermination des caractéristiques géotechniques dans le cadre du projet de construction des réserves nationales de la Fondation Nationale des Musées</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>FONDATION NATIONALE DES MUSEES</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="SKHIRATE-TEMARA"><i class="fa-solid fa-location-dot"></i>SKHIRATE-TEMARA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">213/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400202" class="bdc-card__title">La réalisation des études et établissement des plans topographiques dans le cadre du projet de construction des réserves nationales de la Fondation Nationale des Musées</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>FONDATION NATIONALE DES MUSEES</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="SKHIRATE-TEMARA"><i class="fa-solid fa-location-dot"></i>SKHIRATE-TEMARA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">42/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400578" class="bdc-card__title">Étude technique et suivi les travaux pour la construction en bicouche à 3km de la piste reliant la RP2211 et piste communal ait Said-tilioua et Etude technique pour l’aménagement de la piste agricole de douar ait boubaid sur 1,7 km.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune AIT SAID</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="ESSAOUIRA"><i class="fa-solid fa-location-dot"></i>ESSAOUIRA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">23/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400585" class="bdc-card__title">Étude de protection du centre oued ifrane (Province d’Ifrane) contre les inondations.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>CT OUED IFRANE</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="IFRANE"><i class="fa-solid fa-location-dot"></i>IFRANE</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">07/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400669" class="bdc-card__title">Audit juridique, financier et technique de fin de contrat et assistance à la clôture du contrat de gestion déléguée du service 
+public de collecte et de nettoiement des déchets ménagers et assimilés conclu en juin 2018 avec SS BAYA SARL, jusqu’à son expiration effective.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Groupement de collectivités territoriales bni hessen pour l'environnement de sidi slimane</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="SIDI SLIMANE"><i class="fa-solid fa-location-dot"></i>SIDI SLIMANE</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">BCE/ISTP/34/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401344" class="bdc-card__title">Transport des élèves de l'ISTP relevant de la DPETL de Marrakech pour les visites de chantiers</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>DIRECTEUR PROVINCIAL DE L'EQUIPEMENT, DU TRANSPORT ET DE LA LOGISTIQUE DE MARRAKECH</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="MARRAKECH"><i class="fa-solid fa-location-dot"></i>MARRAKECH</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">118/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401424" class="bdc-card__title">Entretien, réparation et mise en service des imprimantes de la Faculté de Médecine et de Pharmacie de Tanger. 
+Une visite des lieux est prévue le 02/11/2026 à la Faculté de Médecine et de Pharmacie de Tanger (FMPT).</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>FACULTE DE MEDECINE ET DE PHARMACIE DE TANGER</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="TANGER-ASSILAH"><i class="fa-solid fa-location-dot"></i>TANGER-ASSILAH</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 12:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">12-10-2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401529" class="bdc-card__title">Etude Technique De Protection En Gabions Au Profit De La Commune Ait Bazza</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune rurale de AIT BAZZA</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="BOULEMANE"><i class="fa-solid fa-location-dot"></i>BOULEMANE</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">BCHSR/23/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400096" class="bdc-card__title">Entretien et réparation (pièces et main d'oeuvre) des installations de chauffage de l'Hôpital des spécialités durant 120 jours.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>GSTRSK - HOPITAL DES SPÉCIALITÉS</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="RABAT"><i class="fa-solid fa-location-dot"></i>RABAT</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">21/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400111" class="bdc-card__title">Étude technique des travaux de mise à niveau du centre de la Commune de TIZTOUTINE – Province de Nador.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune rurale de TIZTOUTINE</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="NADOR"><i class="fa-solid fa-location-dot"></i>NADOR</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">23/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400419" class="bdc-card__title">Etudes Technique pour réalisation des travaux d’éclairage publiques  de la commune EL MENZEH.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>Commune d' EL MENZEH</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="SKHIRATE-TEMARA"><i class="fa-solid fa-location-dot"></i>SKHIRATE-TEMARA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">BCHMS/21/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/400503" class="bdc-card__title">Réparation, entretien, recharge et vérification des extincteurs de l'HMS</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>GSTRSK - HÔPITAL DE LA MATERNITÉ SOUISSI</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="RABAT"><i class="fa-solid fa-location-dot"></i>RABAT</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">8/2026/DPA/G</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401155" class="bdc-card__title">Réalisation des prestations topographiques préalables à l’aménagement d’une zone d’activité économique (lotissement) sur une superficie de cinq (05) hectares, située au cercle de Taddart, province de Guercif, dans le cadre du programme IHYAE – Lot unique.</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>DIRECTEUR PROVINCIAL DE L'AGRICULTURE DE GUERCIF</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="GUERCIF"><i class="fa-solid fa-location-dot"></i>GUERCIF</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 11:00</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">02FDTI2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401310" class="bdc-card__title">Etude géotechnique de la déviation de la RN1 du PK 842+550 au PK845+650 sur 6 Km - Préfecture d’Agadir Ida-Outanane</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i> WALI DE LA REGION DE SOUSS-MASSA ET GOUVERNEUR DE LA PREFECTURE AGADIR IDA-OU-TANANE</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="AGADIR IDA OU TANANE"><i class="fa-solid fa-location-dot"></i>AGADIR IDA OU TANANE</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 10:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">23/2026</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401340" class="bdc-card__title">IMPRESSION DE CARTES PROFESSIONNELLES PERSONNALISEE POUR LE COMPTE DE LA FONDATION MOHAMMADIA DES ŒUVRES SOCIALES DES FONCTIONNAIRES DE LA JUSTICE</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>FONDATION MOHAMMEDIA DES OEUVRES SOCIALES DES FONCTIONNAIRES DE LA JUSTICE</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="TANGER-ASSILAH, MDIQ-FNIDEQ, TETOUAN, FAHS-ANJRA, LARACHE, AL HOCEIMA, CHEFCHAOUEN, OUEZZANE, OUJDA-ANGAD, NADOR, DRIOUCH, JERADA, BERKANE, TAOURIRT, GUERCIF, FIGUIG, FES, MEKNES, EL-HAJEB, IFRANE, MOULAY-YACOUB, SEFROU, BOULEMANE, TAOUNATE, TAZA, RABAT, SALE, SKHIRATE-TEMARA, KENITRA, KHEMISSET, SIDI KACEM, SIDI SLIMANE, BENI MELLAL, AZILAL, FQUIH BEN SALAH, KHENIFRA, KHOURIBGA, CASABLANCA, MOHAMMADIA, EL JADIDA, NOUACEUR, MEDIOUNA, BENSLIMANE, BERRECHID, SETTAT, SIDI BENNOUR, MARRAKECH, CHICHAOUA, AL HAOUZ, EL KELAA DES SRAGHNA, ESSAOUIRA, REHAMNA, SAFI, YOUSSOUFIA, ERRACHIDIA, OUARZAZATE, MIDELT, TINGHIR, ZAGORA, AGADIR IDA OU TANANE, INEZGANE-AIT MELLOUL, CHTOUKA-AIT BAHA, TAROUDANNT, TIZNIT, TATA, GUELMIM, ASSA-ZAG, TAN-TAN, SIDI IFNI, LAAYOUNE, BOUJDOUR, TARFAYA, ES-SEMARA, OUED ED DAHAB, AOUSSERD, DAKHLA"><i class="fa-solid fa-location-dot"></i>TANGER-ASSILAH, MDIQ-FNIDEQ, TETOUAN, FAHS-ANJRA, LARACHE, AL HOCEIMA, CHEFCHAOUEN, OUEZZANE, OUJDA-ANGAD, NADOR, DRIOUCH, JERADA, BERKANE, TAOURIRT, GUERCIF, FIGUIG, FES, MEKNES, EL-HAJEB, IFRANE, MOULAY-YACOUB, SEFROU, BOULEMANE, TAOUNATE, TAZA, RABAT, SALE, SKHIRATE-TEMARA, KENITRA, KHEMISSET, SIDI KACEM, SIDI SLIMANE, BENI MELLAL, AZILAL, FQUIH BEN SALAH, KHENIFRA, KHOURIBGA, CASABLANCA, MOHAMMADIA, EL JADIDA, NOUACEUR, MEDIOUNA, BENSLIMANE, BERRECHID, SETTAT, SIDI BENNOUR, MARRAKECH, CHICHAOUA, AL HAOUZ, EL KELAA DES SRAGHNA, ESSAOUIRA, REHAMNA, SAFI, YOUSSOUFIA, ERRACHIDIA, OUARZAZATE, MIDELT, TINGHIR, ZAGORA, AGADIR IDA OU TANANE, INEZGANE-AIT MELLOUL, CHTOUKA-AIT BAHA, TAROUDANNT, TIZNIT, TATA, GUELMIM, ASSA-ZAG, TAN-TAN, SIDI IFNI, LAAYOUNE, BOUJDOUR, TARFAYA, ES-SEMARA, OUED ED DAHAB, AOUSSERD, DAKHLA</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                                      <article class="bdc-card bdc-card--lien">
+            <div class="bdc-card__side">
+              <i class="fa-regular fa-calendar"></i>
+              <span class="bdc-card__k">Clôture</span>
+              <span class="bdc-card__v">04 nov. 2026</span>
+              <span class="bdc-card__s">à 10:30</span>
+            </div>
+            <div class="bdc-card__body">
+              <div class="bdc-card__tags">
+                <span class="bdc-card__ref">61/2026/CRRATNG</span>
+                              </div>
+              <a href="/bdc/entreprise/consultation/show/401769" class="bdc-card__title">Achat de prestation d’expertise technique</a>
+              <div class="bdc-card__meta">
+                <span><i class="fa-solid fa-building"></i>INSTITUT NATIONAL DE LA RECHERCHE AGRONOMIQUE/ CENTRE REGIONAL DE LA RECHERCHE AGRONOMIQUE DE TANGER</span>
+                <span class="bdc-card__lieu" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="custom-lieu-tooltip" data-bs-title="TANGER-ASSILAH"><i class="fa-solid fa-location-dot"></i>TANGER-ASSILAH</span>
+              </div>
+            </div>
+            <span class="bdc-card__go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+          </article>
+                <div class="navigation mt-4">
+              <nav>
+                        <ul class="pagination">
+
+                            <li class="page-item disabled">
+                    <span class="page-link">«&nbsp;Précédent</span>
+                </li>
+            
+            
+                                                <li class="page-item active">
+                        <span class="page-link">1</span>
+                    </li>
+                
+                                                <li class="page-item">
+                        <a class="page-link" href="/bdc/entreprise/consultation/?search_consultation_entreprise%5BdateLimiteStart%5D=2026-11-01&amp;search_consultation_entreprise%5BdateLimiteEnd%5D=2026-12-31&amp;search_consultation_entreprise%5Bcategorie%5D=3&amp;search_consultation_entreprise%5BpageSize%5D=50&amp;search_consultation_entreprise%5Bpage%5D=1&amp;page=2">2</a>
+                    </li>
+                
+                                                <li class="page-item">
+                        <a class="page-link" href="/bdc/entreprise/consultation/?search_consultation_entreprise%5BdateLimiteStart%5D=2026-11-01&amp;search_consultation_entreprise%5BdateLimiteEnd%5D=2026-12-31&amp;search_consultation_entreprise%5Bcategorie%5D=3&amp;search_consultation_entreprise%5BpageSize%5D=50&amp;search_consultation_entreprise%5Bpage%5D=1&amp;page=3">3</a>
+                    </li>
+                
+                                                <li class="page-item">
+                        <a class="page-link" href="/bdc/entreprise/consultation/?search_consultation_entreprise%5BdateLimiteStart%5D=2026-11-01&amp;search_consultation_entreprise%5BdateLimiteEnd%5D=2026-12-31&amp;search_consultation_entreprise%5Bcategorie%5D=3&amp;search_consultation_entreprise%5BpageSize%5D=50&amp;search_consultation_entreprise%5Bpage%5D=1&amp;page=4">4</a>
+                    </li>
+                
+                                                <li class="page-item">
+                        <a class="page-link" href="/bdc/entreprise/consultation/?search_consultation_entreprise%5BdateLimiteStart%5D=2026-11-01&amp;search_consultation_entreprise%5BdateLimiteEnd%5D=2026-12-31&amp;search_consultation_entreprise%5Bcategorie%5D=3&amp;search_consultation_entreprise%5BpageSize%5D=50&amp;search_consultation_entreprise%5Bpage%5D=1&amp;page=5">5</a>
+                    </li>
+                
+            
+                                                                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                                                    <li class="page-item">
+                    <a class="page-link" href="/bdc/entreprise/consultation/?search_consultation_entreprise%5BdateLimiteStart%5D=2026-11-01&amp;search_consultation_entreprise%5BdateLimiteEnd%5D=2026-12-31&amp;search_consultation_entreprise%5Bcategorie%5D=3&amp;search_consultation_entreprise%5BpageSize%5D=50&amp;search_consultation_entreprise%5Bpage%5D=1&amp;page=9">9</a>
+                </li>
+            
+                            <li class="page-item">
+                    <a class="page-link" rel="next" href="/bdc/entreprise/consultation/?search_consultation_entreprise%5BdateLimiteStart%5D=2026-11-01&amp;search_consultation_entreprise%5BdateLimiteEnd%5D=2026-12-31&amp;search_consultation_entreprise%5Bcategorie%5D=3&amp;search_consultation_entreprise%5BpageSize%5D=50&amp;search_consultation_entreprise%5Bpage%5D=1&amp;page=2">Suivant&nbsp;»</a>
+                </li>
+                    </ul>
+    </nav>
+
+        </div>
+          </div>
+</body></html>

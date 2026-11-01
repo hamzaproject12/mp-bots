@@ -21,12 +21,20 @@ WA_API_VERSION = os.getenv("WA_API_VERSION", "v25.0")
 # --- Modes ---
 # RUN_MODE=once  -> un seul passage puis sortie (a utiliser avec le cron Railway)
 # RUN_MODE=loop  -> boucle infinie avec sommeil (ancien comportement)
-RUN_MODE = os.getenv("RUN_MODE", "once").lower()
+# RUN_MODE=amorcage -> un passage qui marque tout comme vu SANS rien envoyer
+#                  (a lancer une fois apres un changement d'identifiants)
+RUN_MODE = os.getenv("RUN_MODE", "once").lower().replace("ç", "c")
 
 # Quels scanners activer : "bdc", "ao", ou "bdc,ao"
 SCANNERS = [s.strip().lower() for s in os.getenv("SCANNERS", "bdc,ao").split(",") if s.strip()]
 
 DEBUG_SCORING = os.getenv("DEBUG_SCORING", "0") == "1"
+
+# Chat Telegram de l'ADMINISTRATEUR : seul destinataire des alertes de
+# rupture de scraping (sentinelle.py). Vide = aucun envoi. Jamais un client.
+ADMIN_TELEGRAM = os.getenv("ADMIN_TELEGRAM", "").strip()
+# Pas deux messages de rupture pour le meme scanner a moins de N heures.
+SENTINELLE_SILENCE_H = float(os.getenv("SENTINELLE_SILENCE_H", "6"))
 # WA_TEST et STARTUP_PING supprimes : un deploiement ne doit JAMAIS
 # envoyer de message. Pour tester le canal : RUN_MODE=selftest.
 
