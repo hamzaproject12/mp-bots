@@ -218,7 +218,9 @@ def run(context):
                     offer_id = c["offer_id"]
 
                     # Historique par client : on ne saute que si TOUS l'ont recue
-                    _abos = [x for x in config.SUBSCRIBERS if x.get("ao")]
+                    # Les clients en pause sont ecartes : ni envoi ni marquage.
+                    _abos = config.filtrer_actifs(
+                        [x for x in config.SUBSCRIBERS if x.get("ao")])
                     if store.tous_ont_vu(_abos, offer_id):
                         # Sans cette trace, une offre deja marquee disparait des
                         # logs : impossible de savoir pourquoi elle n'arrive pas.
@@ -235,7 +237,7 @@ def run(context):
                     if score <= 0:
                         continue
 
-                    recipients = [s for s in config.SUBSCRIBERS if s.get("ao")]
+                    recipients = _abos
                     if not recipients:
                         continue
 

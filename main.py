@@ -112,6 +112,10 @@ def run_once(amorcage=False):
 
 def main():
     log(f"🚀 MP Bots V7 | mode={config.RUN_MODE} | scanners={','.join(config.SCANNERS)}")
+    if config.CLIENTS_ACTIFS:
+        log(f"⏸️ PAUSE : seuls {', '.join(config.CLIENTS_ACTIFS)} "
+            "recoivent des alertes (variable CLIENTS_ACTIFS). "
+            "Les autres ne sont NI servis NI marques.")
 
     if not config.TELEGRAM_TOKEN:
         log("⚠️ TELEGRAM_TOKEN absent.")
@@ -123,7 +127,8 @@ def main():
 
     # --- selftest : le SEUL mode qui envoie quelque chose au demarrage ---
     if config.RUN_MODE == "selftest":
-        cible = next((s for s in config.SUBSCRIBERS if s.get("whatsapp")), None)
+        cible = next((s for s in config.filtrer_actifs(config.SUBSCRIBERS)
+                      if s.get("whatsapp")), None)
         if not cible:
             log("🧪 selftest : aucun abonne avec un numero WhatsApp.")
             sys.exit(1)

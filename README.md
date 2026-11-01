@@ -38,6 +38,7 @@ recoivent quoi que ce soit**.
 | `ADMIN_TELEGRAM` | `1952904877` (admin) | chat Telegram de l'administrateur : seul destinataire des alertes de rupture de scraping. Definie vide = aucun envoi |
 | `SENTINELLE_SILENCE_H` | `6` | pas deux messages de rupture pour le meme scanner a moins de N heures |
 | `SCANNERS` | `bdc,ao` | scanners actifs, separes par des virgules |
+| `CLIENTS_ACTIFS` | `moi,pako` | **liste blanche** des clients servis (noms de `SUBSCRIBERS` et `ABONNES`, virgules, casse indifferente). Les autres ne recoivent rien **et ne sont pas marques** : ils recevront tout a leur reactivation. Definie vide = plus de pause |
 | `DATA_PATH` | `data` | dossier persistant (`/app/data/v2` en production) |
 | `SLEEP_OK` / `SLEEP_FAIL` | `14400` / `900` | sommeil en mode `loop` (s) |
 | `MAX_SEEN` | `3000` | offres gardees par historique |
@@ -46,6 +47,15 @@ recoivent quoi que ce soit**.
 
 Un deploiement en `once` ou `loop` est **toujours silencieux** : aucun message
 de controle n'est envoye. Pour tester un canal : `RUN_MODE=selftest`.
+
+### Mettre un client en pause
+
+`CLIENTS_ACTIFS` est une **liste blanche**. Un client absent de la liste est
+retire des destinataires **avant** l'envoi, dans les trois scanners : il ne
+recoit rien et son historique (`seen_client_<nom>.json`) n'est pas touche.
+Le reactiver (ajouter son nom, ou vider la variable) lui envoie donc tout ce
+qui est passe pendant la pause, sans deranger les autres. La sortie site
+(`SiteTravaux`) n'est jamais mise en pause : ce n'est pas un client.
 
 ### Mode `amorcage` (apres un changement d'identifiants d'offres)
 

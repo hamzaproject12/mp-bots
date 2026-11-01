@@ -109,6 +109,48 @@ SUBSCRIBERS = [
 
 
 # =========================================================
+#              PAUSE TEMPORAIRE DES ENVOIS
+# =========================================================
+# Liste BLANCHE des clients qui recoivent les alertes. Tant qu'elle est
+# renseignee, les autres abonnes sont retires des destinataires AVANT tout
+# envoi : ils ne recoivent RIEN et leur historique n'est PAS marque. Quand on
+# les reactive, ils recoivent donc tout ce qui est passe pendant la pause.
+#
+# Noms des abonnes (config.py ET config_hicham.py), separes par des virgules,
+# majuscules/minuscules indifferentes.
+#   CLIENTS_ACTIFS=moi,pako  -> seuls Moi et Pako sont servis
+#   CLIENTS_ACTIFS=          -> plus de pause, TOUT LE MONDE est servi
+# Reglable depuis les variables Railway : reactiver un client ne demande
+# aucun deploiement.
+CLIENTS_ACTIFS = [n.strip().lower()
+                  for n in os.getenv("CLIENTS_ACTIFS", "moi,pako").split(",")
+                  if n.strip()]
+
+
+def client_actif(abonne):
+    """True si cet abonne doit etre servi.
+
+    La sortie site (config_site.ABONNE) n'est jamais mise en pause : ce n'est
+    pas un client mais un canal technique vers le site Travaux.
+    """
+    if abonne.get("site"):
+        return True
+    if not CLIENTS_ACTIFS:
+        return True
+    return (abonne.get("name") or "").strip().lower() in CLIENTS_ACTIFS
+
+
+def filtrer_actifs(abonnes):
+    """Retire les abonnes en pause d'une liste de destinataires."""
+    return [a for a in abonnes if client_actif(a)]
+
+
+def noms_en_pause(abonnes):
+    """Noms des abonnes ecartes, pour la trace dans les logs."""
+    return [a.get("name") for a in abonnes if not client_actif(a)]
+
+
+# =========================================================
 #              BOT BDC : MOTS-CLÉS ET SEUILS
 # =========================================================
 SEUIL_EVENT = int(os.getenv("SEUIL_EVENT", "2"))    # Event & Formation : 2 mots mini

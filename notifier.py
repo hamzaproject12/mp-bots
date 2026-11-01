@@ -168,8 +168,12 @@ def broadcast(alerts):
 
     for item in alerts:
         offer_id = item.get("id")
+        # Filet de securite : meme si un scanner oubliait le filtre, un
+        # client en pause ne recoit rien et n'est donc pas marque.
         destinataires = [s for s in item["recipients"]
-                         if offer_id is None or not store.client_a_vu(s.get("name"), offer_id)]
+                         if config.client_actif(s)
+                         and (offer_id is None
+                              or not store.client_a_vu(s.get("name"), offer_id))]
         if not destinataires:
             continue
         touchees += 1
@@ -190,7 +194,7 @@ def broadcast(alerts):
             # Le site recoit la liste des clients deja servis par cette
             # offre : c'est lui qui s'en sert pour le rapprochement.
             clients = [s.get("name") for s in item["recipients"]
-                       if not s.get("site")]
+                       if not s.get("site") and config.client_actif(s)]
             reussis = notify(sub, item["msg"], item["wa_params"],
                              item.get("wa_template"), seulement=restants,
                              site_payload=item.get("site"), clients=clients)

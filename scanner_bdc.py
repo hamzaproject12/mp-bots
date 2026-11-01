@@ -281,13 +281,16 @@ def run(context):
 
                     zone = zone_prioritaire(t_lower)
 
-                    recipients = [
+                    # filtrer_actifs : un client en pause est ecarte ICI, donc
+                    # ni envoi ni marquage de son historique (il recevra tout
+                    # a sa reactivation).
+                    recipients = config.filtrer_actifs([
                         s for s in config.SUBSCRIBERS
                         if s.get("bdc")
                         and ("ALL" in s["subscriptions"] or category in s["subscriptions"])
-                    ]
+                    ])
                     if not recipients:
-                        log(f"↪️ [BDC] ignoree (aucun abonne pour '{category}') : {ref}")
+                        log(f"↪️ [BDC] ignoree (aucun abonne actif pour '{category}') : {ref}")
                         continue
 
                     # Chaque client a son propre historique : on ne saute

@@ -788,9 +788,15 @@ def run(context):
     # Le site est un destinataire de PLUS, avec son propre historique. Il
     # rattrape donc les offres deja parties chez les clients SANS leur
     # renvoyer quoi que ce soit : broadcast() filtre client par client.
-    destinataires = CH.ABONNES + ([CS.ABONNE] if CS.actif() else [])
+    # Les clients en pause sont ecartes ICI : ni envoi ni marquage de leur
+    # historique, ils recevront tout a leur reactivation.
+    clients = config.filtrer_actifs(CH.ABONNES)
+    pause = config.noms_en_pause(CH.ABONNES)
+    if pause:
+        log(f"⏸️ [{NAME}] en pause (rien envoye, rien marque) : {', '.join(pause)}")
+    destinataires = clients + ([CS.ABONNE] if CS.actif() else [])
     if CS.actif():
-        log(f"🛰️ [{NAME}] sortie site active ({len(CH.ABONNES)} clients + site)")
+        log(f"🛰️ [{NAME}] sortie site active ({len(clients)} clients + site)")
 
     today = datetime.now()
     pub_debut = (today - timedelta(days=CH.JOURS_PUBLICATION)).strftime("%d/%m/%Y")
