@@ -238,6 +238,14 @@ def run(context):
                 page.wait_for_selector(CARTES, timeout=ATTENTE_CARTES_MS)
             except Exception:
                 log(f"⚠️ [BDC] aucune carte sur la page {current_page}")
+                if current_page == 1 and annoncees > 0:
+                    # Page 1 vide alors que le portail annonce des offres :
+                    # les 8 suivantes le seront aussi. On arrete la boucle au
+                    # lieu de bruler 15 s par page, la sentinelle s'occupe du
+                    # reste juste apres.
+                    log("⛔ [BDC] page 1 vide : scan interrompu "
+                        "(voir la sentinelle).")
+                    break
                 current_page += 1
                 continue
 
@@ -332,7 +340,7 @@ def run(context):
         # Sentinelle : le portail annonce des offres mais aucune n'a ete lue.
         # Une rupture n'est pas un echec de passage (voir sentinelle.py) :
         # on garde le rythme normal, reessayer dans 15 min ne servirait a rien.
-        sentinelle.verifier("bdc", annoncees, extraites)
+        sentinelle.verifier("bdc", annoncees, extraites, page=page)
 
         return True, alerts
 

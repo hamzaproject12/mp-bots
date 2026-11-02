@@ -155,7 +155,7 @@ def run(context):
         if not _settle(page, timeout=30000):
             # Aucune carte n'apparait. Legitime si le portail annonce 0 offre ;
             # une rupture s'il en annonce.
-            sentinelle.verifier("ao", portail.lire_total(page), 0)
+            sentinelle.verifier("ao", portail.lire_total(page), 0, page=page)
             log("⚠️ [AO] aucun resultat.")
             return True, alerts
 
@@ -282,7 +282,7 @@ def run(context):
 
         # Sentinelle : le portail annonce des offres mais aucune n'a ete lue.
         # Une rupture n'est pas un echec de passage (voir sentinelle.py).
-        sentinelle.verifier("ao", total_results, extraites)
+        sentinelle.verifier("ao", total_results, extraites, page=page)
 
         return True, alerts
 

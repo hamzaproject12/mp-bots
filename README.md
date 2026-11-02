@@ -75,6 +75,16 @@ log contient `🚨 [<scanner>] RUPTURE : N annoncees, 0 extraites` et, si
 scanner, combien d'offres annoncees, zero extraite, et que les selecteurs sont
 a revoir. Aucun client ne recoit jamais ce message.
 
+La page aveugle est **capturee** dans `DATA_PATH/capture_<scanner>.html`
+(une par scanner, ecrasee a chaque rupture). C'est elle qu'il faut lire pour
+comprendre ce qui a change : sans elle, il faut aller recopier les pages du
+portail a la main, ce qui a coute plusieurs jours en octobre 2026. Pour la
+recuperer : `cat $DATA_PATH/capture_bdc.html` depuis la console Railway.
+
+`RUN_MODE=selftest` envoie aussi un message de controle a `ADMIN_TELEGRAM`
+(`🧪 sentinelle : alarme OK`) : c'est le seul moyen de verifier que l'alarme
+sonne avant d'en avoir besoin. Le scraping n'est pas lance dans ce mode.
+
 Une rupture n'est **pas** un echec de passage : le rythme reste celui d'un
 passage normal (`SLEEP_OK`), reessayer dans 15 minutes ne servirait a rien. Pour
 ne pas inonder l'administrateur, la sentinelle garde une memoire sur disque

@@ -26,6 +26,8 @@ import notifier
 from notifier import log
 
 FICHIER = "sentinelle.json"
+# Capture de la page aveugle, une par scanner, ecrasee a chaque rupture.
+CAPTURE = "capture_{}.html"
 
 
 def _maintenant():
@@ -68,18 +70,63 @@ def _en_silence(scanner, memoire, maintenant):
     return maintenant - dernier < silence
 
 
-def verifier(scanner, annoncees, extraites):
+def capturer(page, scanner):
+    """Ecrit le HTML de la page aveugle dans DATA_PATH, pour diagnostic.
+
+    Sans cette capture, comprendre un changement du portail oblige a aller
+    recopier les pages a la main : c'est ce qui a coute plusieurs jours en
+    octobre 2026. Ne leve JAMAIS : une capture ratee ne doit pas faire
+    echouer un passage."""
+    try:
+        html = page.content()
+    except Exception as e:
+        log(f"   ⚠️ [{scanner}] capture impossible : {str(e)[:70]}")
+        return None
+    chemin = os.path.join(config.DATA_PATH, CAPTURE.format(scanner))
+    try:
+        os.makedirs(config.DATA_PATH, exist_ok=True)
+        with open(chemin, "w", encoding="utf-8") as f:
+            f.write(html)
+        log(f"   📸 [{scanner}] page capturee : {chemin} "
+            f"({len(html)} caracteres)")
+        return chemin
+    except Exception as e:
+        log(f"   ⚠️ [{scanner}] capture non ecrite : {str(e)[:70]}")
+        return None
+
+
+def verifier(scanner, annoncees, extraites, page=None):
     """True s'il y a RUPTURE : le portail annonce des offres, zero extraite.
 
     `annoncees` : nombre lu sur le compteur du portail (0 si illisible).
-    `extraites` : cartes/lignes reellement lues, AVANT tout filtre metier."""
+    `extraites` : cartes/lignes reellement lues, AVANT tout filtre metier.
+    `page`      : si fournie, son HTML est capture pour le diagnostic."""
     if not annoncees or annoncees <= 0 or extraites > 0:
         return False
 
     log(f"🚨 [{scanner}] RUPTURE : {annoncees} annoncees, {extraites} extraites "
         f"— le portail a change")
+    if page is not None:
+        capturer(page, scanner)
     _prevenir_admin(scanner, annoncees)
     return True
+
+
+def tester_alarme():
+    """Envoie un message de controle a l'administrateur, hors memoire de
+    silence. Sert a RUN_MODE=selftest : une alarme qui n'a jamais sonne
+    n'est pas une alarme. Aucun client ne recoit ce message."""
+    chat = (getattr(config, "ADMIN_TELEGRAM", "") or "").strip()
+    if not chat:
+        log("🧪 sentinelle : ADMIN_TELEGRAM vide, rien a tester.")
+        return False
+    texte = ("🧪 Test de l'alarme de rupture de scraping.\n"
+             "Si tu lis ce message, l'alerte fonctionne. "
+             "Aucun client ne le recoit.\n"
+             f"{_maintenant().strftime('%d/%m/%Y %H:%M')}")
+    ok = notifier.send_telegram(chat, texte)
+    log("🧪 sentinelle : " + ("alarme OK ✅" if ok else "alarme MUETTE ❌"))
+    return ok
 
 
 def _prevenir_admin(scanner, annoncees):

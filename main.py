@@ -25,6 +25,7 @@ import config
 import store
 import notifier
 import config_site
+import sentinelle
 from notifier import log
 
 import scanner_bdc
@@ -138,6 +139,10 @@ def main():
             "01/01/2027 a 10:00", "Rabat", "https://www.marchespublics.gov.ma",
         ])
         log("🧪 Resultat : " + ("OK ✅" if ok else "ECHEC ❌ (voir erreur ci-dessus)"))
+        # L'alarme de rupture n'avait jamais sonne en production : on la
+        # verifie ici, sinon on ne sait pas si elle marche avant d'en avoir
+        # besoin. Son echec ne fait pas echouer le selftest du canal client.
+        sentinelle.tester_alarme()
         sys.exit(0 if ok else 1)
 
     if config.RUN_MODE == "amorcage":
