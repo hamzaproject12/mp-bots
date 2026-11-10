@@ -104,12 +104,72 @@ def _postback(page, action, label, timeout=60000):
     sur _settle, qui suffit."""
     try:
         with page.expect_navigation(timeout=timeout, wait_until="domcontentloaded"):
-            action()
+            triggered = action()
+            if triggered is False:
+                raise LookupError(f"contrôle introuvable pour {label}")
+    except LookupError as e:
+        log(f"   ↳ [AO] {e}")
+        return False
     except Exception:
         log(f"   ↳ [AO] {label} : pas de navigation detectee (AJAX ?), on attend le tableau")
     ok = _settle(page)
     time.sleep(1.5)   # petite marge, le tableau se re-rend apres le DOM
     return ok
+
+
+def _select_page_size_500(page):
+    """Choisit le select de pagination visible, même si son ID ASP.NET change."""
+    select = page.locator(
+        "select[id*='PageSizeTop']:has(option[value='500']), "
+        "select[id*='pageSizeTop']:has(option[value='500']), "
+        "select[name*='PageSizeTop']:has(option[value='500']), "
+        "select[name*='pageSizeTop']:has(option[value='500'])"
+    )
+    for i in range(select.count()):
+        candidate = select.nth(i)
+        if candidate.is_visible():
+            candidate.select_option("500")
+            return True
+
+    # Le libellé ou l'ID peut aussi avoir changé : chercher tout select visible
+    # qui propose réellement 500 plutôt que de supposer un identifiant précis.
+    candidates = page.locator("select:has(option[value='500'])")
+    for i in range(candidates.count()):
+        candidate = candidates.nth(i)
+        if candidate.is_visible():
+            candidate.select_option("500")
+            return True
+    return False
+
+
+def _click_next_page(page):
+    """Clique le contrôle « suivant » courant, avec repli sur l'ID historique."""
+    selectors = (
+        "a[rel='next']:visible, button[rel='next']:visible",
+        "a[aria-label*='suivant' i]:visible, button[aria-label*='suivant' i]:visible",
+        "a[title*='suivant' i]:visible, button[title*='suivant' i]:visible",
+        "a[id*='PagerTop']:visible, input[id*='PagerTop']:visible",
+        "a[id*='pager']:visible, input[id*='pager']:visible",
+        "#ctl0_CONTENU_PAGE_resultSearch_PagerTop_ctl2",
+    )
+    for selector in selectors:
+        loc = page.locator(selector)
+        for i in range(loc.count()):
+            candidate = loc.nth(i)
+            if not candidate.is_visible() or not candidate.is_enabled():
+                continue
+            label = " ".join(filter(None, [
+                candidate.get_attribute("title"),
+                candidate.get_attribute("aria-label"),
+                candidate.inner_text() if candidate.evaluate("e => e.tagName !== 'INPUT'") else "",
+            ])).strip().lower()
+            # Un PagerTop générique peut désigner un numéro de page : ne cliquer
+            # que si le contrôle indique « suivant » ou garde l'ID ctl2 connu.
+            known_next = "resultSearch_PagerTop_ctl2" in (candidate.get_attribute("id") or "")
+            if "suivant" in label or "next" in label or known_next:
+                candidate.click()
+                return True
+    return False
 
 
 # =========================================================
@@ -168,12 +228,10 @@ def run(context):
         page_size = 10
         if total_results > 10:
             log("🔄 [AO] passage a 500 resultats par page...")
-            _postback(
-                page,
-                lambda: page.select_option(
-                    "#ctl0_CONTENU_PAGE_resultSearch_listePageSizeTop", "500"),
-                "taille de page",
-            )
+            select_found = page.evaluate("""() => [...document.querySelectorAll('select')]
+              .some(s => s.getClientRects().length && [...s.options].some(o => o.value === '500'))""")
+            if select_found:
+                _postback(page, lambda: _select_page_size_500(page), "taille de page")
             n = _safe_count(page)
             if n > 10:
                 page_size = 500
@@ -268,11 +326,7 @@ def run(context):
             # --- PAGE SUIVANTE (postback) ---
             if current_page < total_pages:
                 log("➡️ [AO] page suivante...")
-                ok = _postback(
-                    page,
-                    lambda: page.click("#ctl0_CONTENU_PAGE_resultSearch_PagerTop_ctl2"),
-                    "page suivante",
-                )
+                ok = _postback(page, lambda: _click_next_page(page), "page suivante")
                 if not ok:
                     log("⚠️ [AO] page suivante indisponible, arret.")
                     break

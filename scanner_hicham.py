@@ -29,6 +29,7 @@ import store
 import config_hicham as CH
 import config_site as CS
 import portail
+import scanner_ao
 import sentinelle
 from notifier import log
 
@@ -145,7 +146,12 @@ def _safe_count(page, retries=4):
 def _postback(page, action, label, timeout=60000):
     try:
         with page.expect_navigation(timeout=timeout, wait_until="domcontentloaded"):
-            action()
+            triggered = action()
+            if triggered is False:
+                raise LookupError(f"contrôle introuvable pour {label}")
+    except LookupError as e:
+        log(f"   ↳ [{NAME}] {e}")
+        return False
     except Exception:
         log(f"   ↳ [{NAME}] {label} : pas de navigation (AJAX ?), on attend le tableau")
     ok = _settle(page)
@@ -842,8 +848,7 @@ def run(context):
         if total > 10:
             log(f"🔄 [{NAME}] passage a 500 resultats par page...")
             _postback(page,
-                      lambda: page.select_option(
-                          "#ctl0_CONTENU_PAGE_resultSearch_listePageSizeTop", "500"),
+                      lambda: scanner_ao._select_page_size_500(page),
                       "taille de page")
             n = _safe_count(page)
             if n > 10:
@@ -909,8 +914,7 @@ def run(context):
 
             if num_page < pages_total:
                 if not _postback(page,
-                                 lambda: page.click(
-                                     "#ctl0_CONTENU_PAGE_resultSearch_PagerTop_ctl2"),
+                                     lambda: scanner_ao._click_next_page(page),
                                  "page suivante"):
                     break
 
